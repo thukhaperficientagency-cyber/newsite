@@ -6,6 +6,17 @@ interface TeamProps {
   members: TeamMember[];
 }
 
+function memberSlug(member: TeamMember) {
+  return (
+    member.slug ||
+    member.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+  );
+}
+
 export default function Team({ members }: TeamProps) {
   const sortedMembers = [...members].sort(
     (a, b) => (a.order || 99) - (b.order || 99)
@@ -41,7 +52,7 @@ export default function Team({ members }: TeamProps) {
                 key={member.id}
                 className="group bg-[#0e1118]/60 p-6 rounded-2xl border border-gray-900/60 hover:border-gray-800 hover:bg-[#121620]/70 transition-all flex flex-col"
               >
-                <Link to={`/team/${encodeURIComponent(member.id)}`} className="block">
+                <Link to={`/team/${memberSlug(member)}`} className="block">
                   <div className="relative aspect-square rounded-xl overflow-hidden mb-6 bg-gray-950">
                     <img
                       src={member.photoUrl}
