@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "routes": [
     {
+      "src": "/admin/?",
+      "dest": "/index.html"
+    },
+    {
       "handle": "filesystem"
     },
     {
