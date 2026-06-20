@@ -1,29 +1,31 @@
-import { useState, useEffect } from "react";
-import { 
-  collection, 
-  doc, 
-  onSnapshot, 
-  query, 
-  where 
+import { useEffect, useState } from "react";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  where
 } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { db, auth, handleFirestoreError } from "./lib/firebase";
-import { 
-  Settings, 
-  TeamMember, 
-  PortfolioProject, 
-  BlogPost, 
-  OperationType 
+import {
+  auth,
+  checkIsAdmin,
+  db
+} from "./lib/firebase";
+import {
+  Settings,
+  TeamMember,
+  PortfolioProject,
+  BlogPost
 } from "./types";
-import { 
-  seedDatabaseIfEmpty, 
-  DEFAULT_SETTINGS, 
-  DEFAULT_TEAM, 
-  DEFAULT_PORTFOLIO, 
-  DEFAULT_BLOGS 
+import {
+  seedDatabaseIfEmpty,
+  DEFAULT_SETTINGS,
+  DEFAULT_TEAM,
+  DEFAULT_PORTFOLIO,
+  DEFAULT_BLOGS
 } from "./utils";
 
-// Component imports
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Services from "./components/Services";
@@ -36,147 +38,189 @@ import AdminDashboard from "./components/AdminDashboard";
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [adminUser, setAdminUser] = useState<User | null>(null);
+  const [isAdminVerified, setIsAdminVerified] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
 
-  // Core Website State variables
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [team, setTeam] = useState<TeamMember[]>(DEFAULT_TEAM);
-  const [portfolio, setPortfolio] = useState<PortfolioProject[]>(DEFAULT_PORTFOLIO);
-  const [blogs, setBlogs] = useState<BlogPost[]>(DEFAULT_BLOGS);
+  const [settings, setSettings] =
+    useState<Settings>(DEFAULT_SETTINGS);
 
-  // Authenticated Admin check helper
-  const isAdminVerifiedLocal = adminUser !== null 
-    && adminUser.email === "thukhaaung542981@gmail.com";
+  const [team, setTeam] =
+    useState<TeamMember[]>(DEFAULT_TEAM);
 
-  // Bootstrap Auth Listener
+  const [portfolio, setPortfolio] =
+    useState<PortfolioProject[]>(DEFAULT_PORTFOLIO);
+
+  const [blogs, setBlogs] =
+    useState<BlogPost[]>(DEFAULT_BLOGS);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setAdminUser(user);
-    });
-    return unsubscribe;
-  }, []);
+    let active = true;
 
-  // Bootstrap Database Seeding and Sync Listeners
-  useEffect(() => {
-    // Attempt auto-seeding if entirely empty
-    seedDatabaseIfEmpty().then((seeded) => {
-      if (seeded) {
-        console.log("Database initialized with modern agency layout.");
-      }
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (user) => {
+        if (!active) return;
 
-    // 1. Sync global settings
-    const unsubSettings = onSnapshot(
-      doc(db, "settings", "config"),
-      (docSnap) => {
-        if (docSnap.exists()) {
-          setSettings(docSnap.data() as Settings);
+        setAdminUser(user);
+
+        if (!user) {
+          setIsAdminVerified(false);
+          setShowAdmin(false);
+          return;
         }
-      },
-      (error) => {
-        console.log("Using local default fallback settings because Firebase is syncing or requires auth.", error);
+
+        const hasAdminAccess = await checkIsAdmin(user.uid);
+
+        if (!active) return;
+
+        setIsAdminVerified(hasAdminAccess);
+
+        if (!hasAdminAccess) {
+          setShowAdmin(false);
+        }
       }
     );
 
-    // 2. Sync Team members profiles
-    const unsubTeam = onSnapshot(
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    seedDatabaseIfEmpty().then((seeded) => {
+      if (seeded) {
+        console.log("Database initialized successfully.");
+      }
+    });
+
+    const unsubscribeSettings = onSnapshot(
+      doc(db, "settings", "config"),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setSettings(snapshot.data() as Settings);
+        }
+      },
+      (error) => {
+        console.log("Using default settings:", error);
+      }
+    );
+
+    const unsubscribeTeam = onSnapshot(
       collection(db, "team"),
       (snapshot) => {
         if (!snapshot.empty) {
-          const membersList: TeamMember[] = [];
-          snapshot.forEach((snap) => {
-            membersList.push(snap.data() as TeamMember);
+          const members: TeamMember[] = [];
+
+          snapshot.forEach((item) => {
+            members.push(item.data() as TeamMember);
           });
-          setTeam(membersList);
+
+          setTeam(members);
         }
       },
       (error) => {
-        console.log("Using local default team members profiles.", error);
+        console.log("Using default team:", error);
       }
     );
 
-    // 3. Sync Case Studies Portfolio showcase
-    const unsubPortfolio = onSnapshot(
+    const unsubscribePortfolio = onSnapshot(
       collection(db, "portfolio"),
       (snapshot) => {
         if (!snapshot.empty) {
-          const projectList: PortfolioProject[] = [];
-          snapshot.forEach((snap) => {
-            projectList.push(snap.data() as PortfolioProject);
+          const projects: PortfolioProject[] = [];
+
+          snapshot.forEach((item) => {
+            projects.push(
+              item.data() as PortfolioProject
+            );
           });
-          setPortfolio(projectList);
+
+          setPortfolio(projects);
         }
       },
       (error) => {
-        console.log("Using local default case studies.", error);
+        console.log("Using default portfolio:", error);
       }
     );
 
-    // 4. Sync Blogs List (Conditional query based on Admin view status)
-    // Secure listener: Public only sees "published", verified admin sees all (draft + published)
-    let unsubBlog: () => void;
+    let unsubscribeBlogs: () => void;
 
-    if (isAdminVerifiedLocal) {
-      unsubBlog = onSnapshot(
+    if (isAdminVerified) {
+      unsubscribeBlogs = onSnapshot(
         collection(db, "blog"),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const blogList: BlogPost[] = [];
-            snapshot.forEach((snap) => {
-              blogList.push(snap.data() as BlogPost);
-            });
-            setBlogs(blogList);
-          }
+          const posts: BlogPost[] = [];
+
+          snapshot.forEach((item) => {
+            posts.push(item.data() as BlogPost);
+          });
+
+          setBlogs(posts);
         },
-        (err) => {
-          console.error("Private blog read rejected.", err);
+        (error) => {
+          console.error("Admin blog read failed:", error);
         }
       );
     } else {
-      unsubBlog = onSnapshot(
-        query(collection(db, "blog"), where("status", "==", "published")),
+      unsubscribeBlogs = onSnapshot(
+        query(
+          collection(db, "blog"),
+          where("status", "==", "published")
+        ),
         (snapshot) => {
           if (!snapshot.empty) {
-            const blogList: BlogPost[] = [];
-            snapshot.forEach((snap) => {
-              blogList.push(snap.data() as BlogPost);
+            const posts: BlogPost[] = [];
+
+            snapshot.forEach((item) => {
+              posts.push(item.data() as BlogPost);
             });
-            setBlogs(blogList);
+
+            setBlogs(posts);
           }
         },
-        (err) => {
-          console.log("Using fallback published blog articles.", err);
+        (error) => {
+          console.log("Using default blogs:", error);
         }
       );
     }
 
-    // Set loading off after core snapshot tries
-    const timer = setTimeout(() => setLoading(false), 800);
+    const loadingTimer = setTimeout(() => {
+      setLoading(false);
+    }, 800);
 
     return () => {
-      unsubSettings();
-      unsubTeam();
-      unsubPortfolio();
-      unsubBlog();
-      clearTimeout(timer);
+      unsubscribeSettings();
+      unsubscribeTeam();
+      unsubscribePortfolio();
+      unsubscribeBlogs();
+      clearTimeout(loadingTimer);
     };
-  }, [isAdminVerifiedLocal]);
+  }, [isAdminVerified]);
 
-  // Loading Splash Screen layout
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#07090d] flex flex-col items-center justify-center text-center p-6 font-display">
-        <div className="w-12 h-12 border-t-2 border-indigo-500 border-solid rounded-full animate-spin mb-4" />
-        <h3 className="text-white text-sm font-semibold tracking-wider uppercase font-mono">Loading Agency Environment...</h3>
-        <p className="text-gray-500 text-[10px] uppercase tracking-widest mt-1 font-mono">Connecting with secure Firestore nodes</p>
+      <div className="min-h-screen bg-[#07090d] flex flex-col items-center justify-center text-center p-6">
+        <div className="w-12 h-12 border-t-2 border-indigo-500 rounded-full animate-spin mb-4" />
+
+        <h3 className="text-white text-sm font-semibold uppercase">
+          Loading Agency Environment...
+        </h3>
+
+        <p className="text-gray-500 text-xs mt-2">
+          Connecting with Firebase
+        </p>
       </div>
     );
   }
 
-  // Active secure admin console rendering overlay
-  if (showAdmin && isAdminVerifiedLocal) {
+  if (
+    showAdmin &&
+    adminUser &&
+    isAdminVerified
+  ) {
     return (
-      <AdminDashboard 
+      <AdminDashboard
         settings={settings}
         setSettings={setSettings}
         team={team}
@@ -190,37 +234,24 @@ export default function App() {
     );
   }
 
-  // Public visitor website landing page
   return (
-    <div className="min-h-screen bg-[#0d0f14] text-[#f3f4f6] relative flex flex-col justify-between selection:bg-indigo-600 selection:text-white">
-      {/* Header and top brand navigation */}
-      <Header 
-        settings={settings} 
+    <div className="min-h-screen bg-[#0d0f14] text-[#f3f4f6] relative flex flex-col justify-between">
+      <Header
+        settings={settings}
         adminUser={adminUser}
         showAdmin={showAdmin}
         setShowAdmin={setShowAdmin}
-        isAdminVerifiedLocal={isAdminVerifiedLocal}
+        isAdminVerifiedLocal={isAdminVerified}
       />
 
-      {/* Main Agency Content */}
       <main className="flex-grow">
-        {/* Dynamic Hero banner */}
         <Hero settings={settings} />
-
-        {/* Modular services directory */}
         <Services />
-
-        {/* Case Studies Portfolio */}
         <Portfolio projects={portfolio} />
-
-        {/* Team profiles */}
         <Team members={team} />
-
-        {/* Engineering blog Insights */}
         <Blog blogs={blogs} />
       </main>
 
-      {/* dynamic brand Footer & social paths */}
       <Footer settings={settings} />
     </div>
   );
