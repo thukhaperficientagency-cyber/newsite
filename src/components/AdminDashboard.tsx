@@ -928,6 +928,16 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
+                  <ImageUploadField
+                    label="Social Share Image (1200×630 recommended)"
+                    folder="social-images"
+                    value={memberForm.socialImageUrl || ""}
+                    onChange={(socialImageUrl) =>
+                      setMemberForm({ ...memberForm, socialImageUrl })
+                    }
+                    onError={(message) => showToast(message, true)}
+                  />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">
@@ -1123,6 +1133,16 @@ export default function AdminDashboard({
                       />
                     </div>
                   </div>
+
+                  <ImageUploadField
+                    label="Social Share Image (1200×630 recommended)"
+                    folder="social-images"
+                    value={projectForm.socialImageUrl || ""}
+                    onChange={(socialImageUrl) =>
+                      setProjectForm({ ...projectForm, socialImageUrl })
+                    }
+                    onError={(message) => showToast(message, true)}
+                  />
 
                   <div>
                     <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">Detailed Description of Engineering Work</label>
@@ -1369,6 +1389,16 @@ export default function AdminDashboard({
                       </select>
                     </div>
                   </div>
+
+                  <ImageUploadField
+                    label="Social Share Image (1200×630 recommended)"
+                    folder="social-images"
+                    value={blogForm.socialImageUrl || ""}
+                    onChange={(socialImageUrl) =>
+                      setBlogForm({ ...blogForm, socialImageUrl })
+                    }
+                    onError={(message) => showToast(message, true)}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
