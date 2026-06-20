@@ -15,7 +15,10 @@ import {
   Eye,
   AlertCircle,
   Upload,
-  Loader2
+  Loader2,
+  ImagePlus,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { db, handleFirestoreError, uploadImage } from "../lib/firebase";
@@ -24,6 +27,7 @@ import {
   TeamMember, 
   PortfolioProject, 
   BlogPost, 
+  BlogContentBlock,
   OperationType 
 } from "../types";
 
@@ -136,6 +140,17 @@ function ImageUploadField({
   );
 }
 
+function newBlock(
+  type: "heading" | "paragraph",
+  text = ""
+): BlogContentBlock {
+  return {
+    id: `${type}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    type,
+    text
+  };
+}
+
 export default function AdminDashboard({
   settings,
   setSettings,
@@ -175,12 +190,14 @@ export default function AdminDashboard({
     category: "Web Engineering",
     description: "",
     imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
+    galleryUrls: [],
     clientName: "",
     tags: [],
     date: "",
     projectUrl: ""
   });
   const [tagsInput, setTagsInput] = useState("");
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
 
   // Blog Form States
   const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
@@ -189,6 +206,7 @@ export default function AdminDashboard({
     title: "",
     excerpt: "",
     content: "",
+    contentBlocks: [newBlock("paragraph")],
     slug: "",
     category: "SEO & Growth",
     imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800",
@@ -197,6 +215,7 @@ export default function AdminDashboard({
     publishedAt: new Date().toISOString().split("T")[0],
     status: "published"
   });
+  const [isPastingBlogImage, setIsPastingBlogImage] = useState(false);
 
   const showToast = (msg: string, isError = false) => {
     if (isError) {
@@ -297,6 +316,7 @@ export default function AdminDashboard({
       category: "Web Engineering",
       description: "",
       imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
+      galleryUrls: [],
       clientName: "",
       tags: [],
       date: new Date().getFullYear().toString(),
@@ -349,7 +369,13 @@ export default function AdminDashboard({
   // 4. BLOG MANAGEMENT FUNCTIONS
   const handleEditBlog = (post: BlogPost) => {
     setEditingBlogId(post.id);
-    setBlogForm(post);
+    setBlogForm({
+      ...post,
+      contentBlocks:
+        post.contentBlocks?.length
+          ? post.contentBlocks
+          : [newBlock("paragraph", post.content || "")]
+    });
   };
 
   const handleAddNewBlogBtn = () => {
@@ -359,6 +385,7 @@ export default function AdminDashboard({
       title: "",
       excerpt: "",
       content: "",
+      contentBlocks: [newBlock("paragraph")],
       slug: "",
       category: "SEO & Growth",
       imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800",
@@ -371,13 +398,28 @@ export default function AdminDashboard({
 
   const handleSaveBlog = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!blogForm.id || !blogForm.title || !blogForm.excerpt || !blogForm.content || !blogForm.slug) {
+    const hasContent =
+      Boolean(blogForm.content?.trim()) ||
+      Boolean(blogForm.contentBlocks?.some((block) =>
+        block.type === "image" ? block.url : block.text.trim()
+      ));
+
+    if (!blogForm.id || !blogForm.title || !blogForm.excerpt || !hasContent || !blogForm.slug) {
       showToast("Missing required blog fields. Slug and excerpt are required.", true);
       return;
     }
     const path = `blog/${blogForm.id}`;
     try {
-      const saved = { ...blogForm } as BlogPost;
+      const plainContent = (blogForm.contentBlocks || [])
+        .filter((block) => block.type !== "image")
+        .map((block) => block.type === "image" ? "" : block.text)
+        .filter(Boolean)
+        .join("\n\n");
+
+      const saved = {
+        ...blogForm,
+        content: plainContent || blogForm.content || ""
+      } as BlogPost;
       await setDoc(doc(db, "blog", saved.id), saved);
       
       const exists = blogs.some((b) => b.id === saved.id);
@@ -407,6 +449,83 @@ export default function AdminDashboard({
       showToast("Delete request failed.", true);
       handleFirestoreError(err, OperationType.DELETE, path);
     }
+  };
+
+  const handleGalleryUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = Array.from(event.target.files || []) as File[];
+    event.target.value = "";
+    if (!files.length) return;
+
+    setIsUploadingGallery(true);
+    try {
+      const urls = await Promise.all(
+        files.map((file) => uploadImage(file, "portfolio-gallery"))
+      );
+      setProjectForm({
+        ...projectForm,
+        galleryUrls: [...(projectForm.galleryUrls || []), ...urls]
+      });
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Gallery upload failed.",
+        true
+      );
+    } finally {
+      setIsUploadingGallery(false);
+    }
+  };
+
+  const updateBlogBlocks = (contentBlocks: BlogContentBlock[]) => {
+    setBlogForm({ ...blogForm, contentBlocks });
+  };
+
+  const moveBlogBlock = (index: number, direction: -1 | 1) => {
+    const blocks = [...(blogForm.contentBlocks || [])];
+    const target = index + direction;
+    if (target < 0 || target >= blocks.length) return;
+    [blocks[index], blocks[target]] = [blocks[target], blocks[index]];
+    updateBlogBlocks(blocks);
+  };
+
+  const uploadBlogImageBlock = async (file: File) => {
+    setIsPastingBlogImage(true);
+    try {
+      const url = await uploadImage(file, "blog-content");
+      updateBlogBlocks([
+        ...(blogForm.contentBlocks || []),
+        {
+          id: `image-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          type: "image",
+          url,
+          alt: "",
+          caption: ""
+        }
+      ]);
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Blog image upload failed.",
+        true
+      );
+    } finally {
+      setIsPastingBlogImage(false);
+    }
+  };
+
+  const handleBlogPaste = async (
+    event: React.ClipboardEvent<HTMLDivElement>
+  ) => {
+    const clipboardItems = Array.from(
+      event.clipboardData.items
+    ) as DataTransferItem[];
+    const imageItem = clipboardItems.find(
+      (item) => item.kind === "file" && item.type.startsWith("image/")
+    );
+    const file = imageItem?.getAsFile();
+    if (!file) return;
+    event.preventDefault();
+    await uploadBlogImageBlock(file);
   };
 
   return (
@@ -889,6 +1008,68 @@ export default function AdminDashboard({
                     />
                   </div>
 
+                  <div className="rounded-xl border border-gray-800 bg-gray-950/50 p-4">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <div>
+                        <label className="block text-[10px] uppercase font-mono text-gray-400">
+                          Event / POSM Gallery
+                        </label>
+                        <p className="text-[10px] text-gray-600 mt-1">
+                          Multiple images can be selected at once.
+                        </p>
+                      </div>
+                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold cursor-pointer">
+                        {isUploadingGallery ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <ImagePlus size={14} />
+                        )}
+                        {isUploadingGallery ? "Uploading..." : "Add Images"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          disabled={isUploadingGallery}
+                          onChange={handleGalleryUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {(projectForm.galleryUrls || []).length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {(projectForm.galleryUrls || []).map((url, index) => (
+                          <div key={`${url}-${index}`} className="relative group aspect-square">
+                            <img
+                              src={url}
+                              alt={`Gallery ${index + 1}`}
+                              className="w-full h-full rounded-lg object-cover border border-gray-800"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setProjectForm({
+                                  ...projectForm,
+                                  galleryUrls: (projectForm.galleryUrls || []).filter(
+                                    (_, itemIndex) => itemIndex !== index
+                                  )
+                                })
+                              }
+                              className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600 text-white opacity-0 group-hover:opacity-100"
+                              aria-label="Remove image"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-600 text-center py-5">
+                        No gallery images yet.
+                      </p>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">Technical Stack Tags (split with comma)</label>
@@ -1071,15 +1252,164 @@ export default function AdminDashboard({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">Full Article Content (Markdown format supported)</label>
-                    <textarea 
-                      required
-                      value={blogForm.content || ""}
-                      onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
-                      rows={12}
-                      className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs font-mono"
-                    />
+                  <div
+                    onPaste={handleBlogPaste}
+                    className="rounded-xl border border-gray-800 bg-gray-950/50 p-4 space-y-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <label className="block text-[10px] uppercase font-mono text-gray-400">
+                          Article Content
+                        </label>
+                        <p className="text-[10px] text-gray-600 mt-1">
+                          Text blocks ရေးနိုင်ပြီး screenshot/image ကို Cmd+V ဖြင့် paste လုပ်နိုင်ပါတယ်။
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateBlogBlocks([
+                              ...(blogForm.contentBlocks || []),
+                              newBlock("heading")
+                            ])
+                          }
+                          className="px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-xs"
+                        >
+                          + Heading
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateBlogBlocks([
+                              ...(blogForm.contentBlocks || []),
+                              newBlock("paragraph")
+                            ])
+                          }
+                          className="px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-xs"
+                        >
+                          + Text
+                        </button>
+                        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-600 text-xs font-semibold cursor-pointer">
+                          {isPastingBlogImage ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : (
+                            <ImagePlus size={13} />
+                          )}
+                          Add Image
+                          <input
+                            type="file"
+                            accept="image/*"
+                            disabled={isPastingBlogImage}
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              event.target.value = "";
+                              if (file) void uploadBlogImageBlock(file);
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {(blogForm.contentBlocks || []).map((block, index) => (
+                      <div key={block.id} className="rounded-lg border border-gray-800 bg-[#080a0e] p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] uppercase font-mono text-gray-500">
+                            {block.type}
+                          </span>
+                          <div className="flex gap-1">
+                            <button type="button" onClick={() => moveBlogBlock(index, -1)} className="p-1 text-gray-500 hover:text-white">
+                              <ArrowUp size={13} />
+                            </button>
+                            <button type="button" onClick={() => moveBlogBlock(index, 1)} className="p-1 text-gray-500 hover:text-white">
+                              <ArrowDown size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateBlogBlocks(
+                                  (blogForm.contentBlocks || []).filter(
+                                    (item) => item.id !== block.id
+                                  )
+                                )
+                              }
+                              className="p-1 text-red-500"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {block.type === "image" ? (
+                          <div className="space-y-2">
+                            <img src={block.url} alt={block.alt || "Blog content"} className="w-full max-h-80 object-contain rounded-lg bg-black" />
+                            <input
+                              type="text"
+                              placeholder="Image alt text (SEO)"
+                              value={block.alt || ""}
+                              onChange={(event) =>
+                                updateBlogBlocks(
+                                  (blogForm.contentBlocks || []).map((item) =>
+                                    item.id === block.id && item.type === "image"
+                                      ? { ...item, alt: event.target.value }
+                                      : item
+                                  )
+                                )
+                              }
+                              className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Caption (optional)"
+                              value={block.caption || ""}
+                              onChange={(event) =>
+                                updateBlogBlocks(
+                                  (blogForm.contentBlocks || []).map((item) =>
+                                    item.id === block.id && item.type === "image"
+                                      ? { ...item, caption: event.target.value }
+                                      : item
+                                  )
+                                )
+                              }
+                              className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                            />
+                          </div>
+                        ) : block.type === "heading" ? (
+                          <input
+                            type="text"
+                            placeholder="Section heading"
+                            value={block.text}
+                            onChange={(event) =>
+                              updateBlogBlocks(
+                                (blogForm.contentBlocks || []).map((item) =>
+                                  item.id === block.id && item.type !== "image"
+                                    ? { ...item, text: event.target.value }
+                                    : item
+                                )
+                              )
+                            }
+                            className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-sm font-bold"
+                          />
+                        ) : (
+                          <textarea
+                            placeholder="Write paragraph text..."
+                            value={block.text}
+                            onChange={(event) =>
+                              updateBlogBlocks(
+                                (blogForm.contentBlocks || []).map((item) =>
+                                  item.id === block.id && item.type !== "image"
+                                    ? { ...item, text: event.target.value }
+                                    : item
+                                )
+                              )
+                            }
+                            rows={5}
+                            className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs leading-relaxed"
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
 
                   <button 
