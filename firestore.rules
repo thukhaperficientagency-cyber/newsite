@@ -151,6 +151,34 @@ service cloud.firestore {
         && (
           data.projectUrl == null ||
           data.projectUrl is string
+        )
+        && (
+          data.relatedServiceSlug == null ||
+          data.relatedServiceSlug is string
+        );
+    }
+
+    function isValidService(data) {
+      return data.id is string
+        && data.id.size() <= 128
+        && data.slug is string
+        && data.slug.size() <= 128
+        && data.title is string
+        && data.title.size() <= 256
+        && data.shortDescription is string
+        && data.description is string
+        && data.status is string
+        && (
+          data.status == "published" ||
+          data.status == "draft"
+        )
+        && (
+          data.heroImageUrl == null ||
+          data.heroImageUrl is string
+        )
+        && (
+          data.order == null ||
+          data.order is number
         );
     }
 
@@ -228,6 +256,23 @@ service cloud.firestore {
 
       allow update: if isAdmin()
         && isValidPortfolioProject(request.resource.data);
+
+      allow delete: if isAdmin();
+    }
+
+    match /services/{serviceId} {
+      allow get: if resource.data.status == "published"
+        || isAdmin();
+
+      allow list: if resource.data.status == "published"
+        || isAdmin();
+
+      allow create: if isAdmin()
+        && isValidId(serviceId)
+        && isValidService(request.resource.data);
+
+      allow update: if isAdmin()
+        && isValidService(request.resource.data);
 
       allow delete: if isAdmin();
     }
