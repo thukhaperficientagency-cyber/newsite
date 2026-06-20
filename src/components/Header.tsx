@@ -11,7 +11,7 @@ export default function Header({ settings }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { name: "Services", href: "/#services" },
+    { name: "Services", href: "/services" },
     { name: "Portfolio", href: "/case-studies" },
     { name: "Team", href: "/team" },
     { name: "Blog", href: "/blog" },
