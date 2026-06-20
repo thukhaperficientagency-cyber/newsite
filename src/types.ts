@@ -38,6 +38,27 @@ export interface PortfolioProject {
   tags?: string[];
   date?: string;
   projectUrl?: string;
+  relatedServiceSlug?: string;
+}
+
+export interface ServicePillar {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription: string;
+  description: string;
+  heroImageUrl?: string;
+  benefits?: string[];
+  process?: string[];
+  faqs?: {
+    question: string;
+    answer: string;
+  }[];
+  seoTitle?: string;
+  seoDescription?: string;
+  keywords?: string[];
+  order?: number;
+  status: "published" | "draft";
 }
 
 export type BlogContentBlock =
@@ -68,6 +89,10 @@ export interface BlogPost {
   publishedAt: string;
   views?: number;
   status: "published" | "draft";
+  relatedServiceSlug?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  keywords?: string[];
 }
 
 export enum OperationType {
