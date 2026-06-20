@@ -1,6 +1,6 @@
 import { ArrowLeft, ExternalLink, Github, Linkedin } from "lucide-react";
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import Blog from "../components/Blog";
 import Portfolio from "../components/Portfolio";
 import Seo from "../components/Seo";
@@ -10,6 +10,17 @@ import { BlogPost, PortfolioProject, ServicePillar, Settings, TeamMember } from 
 
 const fallbackDescription =
   "Digital product engineering, design, SEO, and growth expertise.";
+
+function teamMemberSlug(member: TeamMember) {
+  return (
+    member.slug ||
+    member.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+  );
+}
 
 function Breadcrumbs({
   items
@@ -116,6 +127,7 @@ export function ServiceDetailPage({
         title={service.seoTitle || `${service.title} | ${settings.brandName}`}
         description={service.seoDescription || service.shortDescription}
         image={service.heroImageUrl}
+        keywords={service.keywords}
         jsonLd={{
           "@context": "https://schema.org",
           "@graph": [
@@ -333,17 +345,29 @@ export function TeamDetailPage({
   settings: Settings;
 }) {
   const { id } = useParams();
-  const member = members.find((item) => item.id === id);
+  const member = members.find(
+    (item) => teamMemberSlug(item) === id || item.id === id
+  );
 
   if (!member) return <NotFoundPage settings={settings} />;
+  const slug = teamMemberSlug(member);
+
+  if (id !== slug) {
+    return <Navigate to={`/team/${slug}`} replace />;
+  }
 
   return (
     <>
       <Seo
-        title={`${member.name} — ${member.role} | ${settings.brandName}`}
-        description={member.bio || `${member.name} is ${member.role} at ${settings.brandName}.`}
+        title={member.seoTitle || `${member.name} — ${member.role} | ${settings.brandName}`}
+        description={
+          member.seoDescription ||
+          member.bio ||
+          `${member.name} is ${member.role} at ${settings.brandName}.`
+        }
         image={member.photoUrl}
         type="profile"
+        keywords={member.keywords}
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Person",
@@ -358,7 +382,7 @@ export function TeamDetailPage({
           items={[
             { name: "Home", url: "/" },
             { name: "Team", url: "/team" },
-            { name: member.name, url: `/team/${member.id}` }
+            { name: member.name, url: `/team/${slug}` }
           ]}
         />
         <Link to="/team" className="inline-flex items-center gap-2 text-sm text-indigo-400 mb-10">
@@ -571,6 +595,7 @@ export function BlogDetailPage({
         description={post.seoDescription || post.excerpt}
         image={post.imageUrl}
         type="article"
+        keywords={post.keywords}
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "BlogPosting",
