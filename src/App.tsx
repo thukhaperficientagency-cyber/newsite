@@ -39,6 +39,7 @@ import Blog from "./components/Blog";
 import Footer from "./components/Footer";
 import FloatingViber from "./components/FloatingViber";
 import Seo from "./components/Seo";
+import ContactForm from "./components/ContactForm";
 
 const AdminDashboard = lazy(
   () => import("./components/AdminDashboard")
@@ -343,6 +344,7 @@ export default function App() {
                   <Portfolio projects={portfolio} />
                   <Team members={team} />
                   <Blog blogs={blogs} />
+                  <ContactForm services={services} settings={settings} />
                   <Footer settings={settings} />
                   <FloatingViber settings={settings} />
                 </>
