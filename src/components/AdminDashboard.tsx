@@ -28,8 +28,10 @@ import {
   PortfolioProject, 
   BlogPost, 
   BlogContentBlock,
+  ServicePillar,
   OperationType 
 } from "../types";
+import ServiceAdmin from "./ServiceAdmin";
 
 interface AdminDashboardProps {
   settings: Settings;
@@ -40,10 +42,12 @@ interface AdminDashboardProps {
   setPortfolio: (portfolio: PortfolioProject[]) => void;
   blogs: BlogPost[];
   setBlogs: (blogs: BlogPost[]) => void;
+  services: ServicePillar[];
+  setServices: (services: ServicePillar[]) => void;
   onClose: () => void;
 }
 
-type TabType = "branding" | "team_mgmt" | "portfolio_mgmt" | "blog_mgmt";
+type TabType = "branding" | "services_mgmt" | "team_mgmt" | "portfolio_mgmt" | "blog_mgmt";
 
 interface ImageUploadFieldProps {
   label: string;
@@ -160,6 +164,8 @@ export default function AdminDashboard({
   setPortfolio,
   blogs,
   setBlogs,
+  services,
+  setServices,
   onClose
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>("branding");
@@ -194,7 +200,8 @@ export default function AdminDashboard({
     clientName: "",
     tags: [],
     date: "",
-    projectUrl: ""
+    projectUrl: "",
+    relatedServiceSlug: ""
   });
   const [tagsInput, setTagsInput] = useState("");
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
@@ -212,6 +219,10 @@ export default function AdminDashboard({
     imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800",
     authorName: "Thukha Aung",
     authorAvatar: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&q=80&w=100",
+    relatedServiceSlug: "",
+    seoTitle: "",
+    seoDescription: "",
+    keywords: [],
     publishedAt: new Date().toISOString().split("T")[0],
     status: "published"
   });
@@ -320,7 +331,8 @@ export default function AdminDashboard({
       clientName: "",
       tags: [],
       date: new Date().getFullYear().toString(),
-      projectUrl: ""
+      projectUrl: "",
+      relatedServiceSlug: ""
     });
     setTagsInput("");
   };
@@ -391,6 +403,10 @@ export default function AdminDashboard({
       imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800",
       authorName: "Thukha Aung",
       authorAvatar: "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&q=80&w=100",
+      relatedServiceSlug: "",
+      seoTitle: "",
+      seoDescription: "",
+      keywords: [],
       publishedAt: new Date().toISOString().split("T")[0],
       status: "published"
     });
@@ -566,6 +582,17 @@ export default function AdminDashboard({
           >
             <SettingsIcon size={16} />
             <span>Identity & Layouts</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab("services_mgmt")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-xs md:text-sm whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === "services_mgmt"
+                ? "bg-indigo-500 text-white font-semibold"
+                : "text-gray-400 hover:text-white hover:bg-gray-900/50"
+            }`}
+          >
+            <Briefcase size={16} />
+            <span>Service Pillars ({services.length})</span>
           </button>
           <button 
             onClick={() => setActiveTab("team_mgmt")}
@@ -768,6 +795,14 @@ export default function AdminDashboard({
                 </button>
               </form>
             </div>
+          )}
+
+          {activeTab === "services_mgmt" && (
+            <ServiceAdmin
+              services={services}
+              setServices={setServices}
+              showToast={showToast}
+            />
           )}
 
           {/* TAB 2: TEAM MANAGEMENT */}
@@ -1092,6 +1127,31 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">
+                      Related Service Pillar
+                    </label>
+                    <select
+                      value={projectForm.relatedServiceSlug || ""}
+                      onChange={(e) =>
+                        setProjectForm({
+                          ...projectForm,
+                          relatedServiceSlug: e.target.value
+                        })
+                      }
+                      className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                    >
+                      <option value="">No related service</option>
+                      {services
+                        .filter((service) => service.status === "published")
+                        .map((service) => (
+                          <option key={service.id} value={service.slug}>
+                            {service.title}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
                   <button 
                     type="submit"
                     className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-semibold rounded-lg text-xs"
@@ -1249,6 +1309,56 @@ export default function AdminDashboard({
                       value={blogForm.excerpt || ""}
                       onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
                       className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs" 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">Related Service Pillar</label>
+                      <select
+                        value={blogForm.relatedServiceSlug || ""}
+                        onChange={(e) => setBlogForm({ ...blogForm, relatedServiceSlug: e.target.value })}
+                        className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                      >
+                        <option value="">No related service</option>
+                        {services
+                          .filter((service) => service.status === "published")
+                          .map((service) => (
+                            <option key={service.id} value={service.slug}>
+                              {service.title}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">SEO Keywords</label>
+                      <input
+                        type="text"
+                        placeholder="SEO Myanmar, digital marketing"
+                        value={blogForm.keywords?.join(", ") || ""}
+                        onChange={(e) => setBlogForm({
+                          ...blogForm,
+                          keywords: e.target.value.split(",").map((item) => item.trim()).filter(Boolean)
+                        })}
+                        className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Custom SEO title (optional)"
+                      value={blogForm.seoTitle || ""}
+                      onChange={(e) => setBlogForm({ ...blogForm, seoTitle: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Custom SEO description (optional)"
+                      value={blogForm.seoDescription || ""}
+                      onChange={(e) => setBlogForm({ ...blogForm, seoDescription: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
                     />
                   </div>
 
