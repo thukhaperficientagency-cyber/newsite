@@ -1,0 +1,16 @@
+# Perficient Agency
+
+Perficient Agency is a digital agency serving businesses in Myanmar with web development, UI/UX design, SEO, branding, and digital growth services.
+
+## Main Pages
+
+- [Home](https://www.perficientagency.online/)
+- [Services](https://www.perficientagency.online/#services)
+- [Case Studies](https://www.perficientagency.online/case-studies)
+- [Team](https://www.perficientagency.online/team)
+- [Blog](https://www.perficientagency.online/blog)
+- [Contact](https://www.perficientagency.online/#contact)
+
+## Crawling
+
+Public website pages, published case studies, and published blog posts may be crawled and indexed.
