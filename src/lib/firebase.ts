@@ -5,8 +5,8 @@ import {
 } from "firebase/app";
 
 import {
+  browserLocalPersistence,
   getAuth,
-  inMemoryPersistence,
   setPersistence,
   signInWithEmailAndPassword,
   signOut
@@ -42,6 +42,42 @@ export const storage = getStorage(app);
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
+async function optimizeImage(file: File): Promise<Blob> {
+  if (file.type === "image/gif" || file.type === "image/svg+xml") {
+    return file;
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const maxDimension = 1600;
+  const scale = Math.min(
+    1,
+    maxDimension / Math.max(bitmap.width, bitmap.height)
+  );
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    bitmap.close();
+    return file;
+  }
+
+  context.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  return new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => resolve(blob || file),
+      "image/webp",
+      0.82
+    );
+  });
+}
+
 export async function uploadImage(
   file: File,
   folder: string
@@ -58,7 +94,10 @@ export async function uploadImage(
     throw new Error("ပုံအရွယ်အစား 5MB ထက်မကျော်ရပါ။");
   }
 
-  const safeName = file.name
+  const optimizedFile = await optimizeImage(file);
+  const isOptimized = optimizedFile !== file;
+  const baseName = file.name.replace(/\.[^.]+$/, "");
+  const safeName = `${baseName}${isOptimized ? ".webp" : ""}`
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, "-");
 
@@ -67,8 +106,8 @@ export async function uploadImage(
     `site-images/${folder}/${auth.currentUser.uid}/${Date.now()}-${safeName}`
   );
 
-  const snapshot = await uploadBytes(imageRef, file, {
-    contentType: file.type
+  const snapshot = await uploadBytes(imageRef, optimizedFile, {
+    contentType: isOptimized ? "image/webp" : file.type
   });
 
   return getDownloadURL(snapshot.ref);
@@ -78,7 +117,7 @@ export async function loginWithEmail(
   email: string,
   password: string
 ) {
-  await setPersistence(auth, inMemoryPersistence);
+  await setPersistence(auth, browserLocalPersistence);
 
   const result = await signInWithEmailAndPassword(
     auth,
