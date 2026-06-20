@@ -33,17 +33,33 @@ export interface PortfolioProject {
   category: string;
   description: string;
   imageUrl: string;
+  galleryUrls?: string[];
   clientName?: string;
   tags?: string[];
   date?: string;
   projectUrl?: string;
 }
 
+export type BlogContentBlock =
+  | {
+      id: string;
+      type: "heading" | "paragraph";
+      text: string;
+    }
+  | {
+      id: string;
+      type: "image";
+      url: string;
+      alt?: string;
+      caption?: string;
+    };
+
 export interface BlogPost {
   id: string;
   title: string;
   excerpt: string;
   content: string;
+  contentBlocks?: BlogContentBlock[];
   slug: string;
   category: string;
   imageUrl?: string;
