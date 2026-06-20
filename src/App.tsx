@@ -34,6 +34,7 @@ import Portfolio from "./components/Portfolio";
 import Team from "./components/Team";
 import Blog from "./components/Blog";
 import Footer from "./components/Footer";
+import FloatingViber from "./components/FloatingViber";
 import Seo from "./components/Seo";
 
 const AdminDashboard = lazy(
@@ -293,6 +294,7 @@ export default function App() {
                   <Team members={team} />
                   <Blog blogs={blogs} />
                   <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
                 </>
               }
             />
@@ -303,6 +305,7 @@ export default function App() {
                   <Header settings={settings} />
                   <TeamListPage members={team} settings={settings} />
                   <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
                 </>
               }
             />
@@ -313,6 +316,7 @@ export default function App() {
                   <Header settings={settings} />
                   <TeamDetailPage members={team} settings={settings} />
                   <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
                 </>
               }
             />
@@ -323,6 +327,7 @@ export default function App() {
                   <Header settings={settings} />
                   <CaseStudyListPage projects={portfolio} settings={settings} />
                   <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
                 </>
               }
             />
@@ -333,6 +338,7 @@ export default function App() {
                   <Header settings={settings} />
                   <CaseStudyDetailPage projects={portfolio} settings={settings} />
                   <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
                 </>
               }
             />
@@ -343,6 +349,7 @@ export default function App() {
                   <Header settings={settings} />
                   <BlogListPage blogs={blogs} settings={settings} />
                   <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
                 </>
               }
             />
@@ -353,6 +360,7 @@ export default function App() {
                   <Header settings={settings} />
                   <BlogDetailPage blogs={blogs} settings={settings} />
                   <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
                 </>
               }
             />
