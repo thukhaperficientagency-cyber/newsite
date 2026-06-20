@@ -7,6 +7,7 @@ import {
   where
 } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
+import { Route, Routes } from "react-router-dom";
 import {
   auth,
   checkIsAdmin,
@@ -34,6 +35,16 @@ import Team from "./components/Team";
 import Blog from "./components/Blog";
 import Footer from "./components/Footer";
 import AdminDashboard from "./components/AdminDashboard";
+import Seo from "./components/Seo";
+import {
+  BlogDetailPage,
+  BlogListPage,
+  CaseStudyDetailPage,
+  CaseStudyListPage,
+  NotFoundPage,
+  TeamDetailPage,
+  TeamListPage
+} from "./pages/ContentPages";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -69,7 +80,13 @@ export default function App() {
           return;
         }
 
-        const hasAdminAccess = await checkIsAdmin(user.uid);
+        let hasAdminAccess = false;
+
+        try {
+          hasAdminAccess = await checkIsAdmin(user.uid);
+        } catch (error) {
+          console.error("Admin verification failed:", error);
+        }
 
         if (!active) return;
 
@@ -245,11 +262,53 @@ export default function App() {
       />
 
       <main className="flex-grow">
-        <Hero settings={settings} />
-        <Services />
-        <Portfolio projects={portfolio} />
-        <Team members={team} />
-        <Blog blogs={blogs} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <Seo
+                  title={`${settings.brandName} | Digital Product Engineering`}
+                  description={
+                    settings.heroSubtitle ||
+                    "Digital product engineering, design, SEO, and growth services."
+                  }
+                  image={settings.logoUrl}
+                />
+                <Hero settings={settings} />
+                <Services />
+                <Portfolio projects={portfolio} />
+                <Team members={team} />
+                <Blog blogs={blogs} />
+              </>
+            }
+          />
+          <Route
+            path="/team"
+            element={<TeamListPage members={team} settings={settings} />}
+          />
+          <Route
+            path="/team/:id"
+            element={<TeamDetailPage members={team} settings={settings} />}
+          />
+          <Route
+            path="/case-studies"
+            element={<CaseStudyListPage projects={portfolio} settings={settings} />}
+          />
+          <Route
+            path="/case-studies/:id"
+            element={<CaseStudyDetailPage projects={portfolio} settings={settings} />}
+          />
+          <Route
+            path="/blog"
+            element={<BlogListPage blogs={blogs} settings={settings} />}
+          />
+          <Route
+            path="/blog/:slug"
+            element={<BlogDetailPage blogs={blogs} settings={settings} />}
+          />
+          <Route path="*" element={<NotFoundPage settings={settings} />} />
+        </Routes>
       </main>
 
       <Footer settings={settings} />
