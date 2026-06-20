@@ -205,11 +205,11 @@ export default function Header({
           )}
 
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-gray-400 hover:text-white p-1"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+  onClick={() => setIsOpen(!isOpen)}
+  className="text-gray-400 hover:text-white p-1"
+>
+  {isOpen ? <X size={24} /> : <Menu size={24} />}
+</button>
         </div>
       </div>
 
