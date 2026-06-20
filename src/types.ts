@@ -18,6 +18,7 @@ export interface Settings {
 
 export interface TeamMember {
   id: string;
+  slug?: string;
   name: string;
   role: string;
   photoUrl: string;
@@ -25,6 +26,9 @@ export interface TeamMember {
   order?: number;
   socialLinkedin?: string;
   socialGithub?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  keywords?: string[];
 }
 
 export interface PortfolioProject {
