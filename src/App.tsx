@@ -17,14 +17,17 @@ import {
   Settings,
   TeamMember,
   PortfolioProject,
-  BlogPost
+  BlogPost,
+  ServicePillar
 } from "./types";
 import {
   seedDatabaseIfEmpty,
   DEFAULT_SETTINGS,
   DEFAULT_TEAM,
   DEFAULT_PORTFOLIO,
-  DEFAULT_BLOGS
+  DEFAULT_BLOGS,
+  DEFAULT_SERVICES,
+  seedServicesIfEmpty
 } from "./utils";
 
 import Header from "./components/Header";
@@ -89,6 +92,18 @@ const TeamListPage = lazy(() =>
   }))
 );
 
+const ServiceListPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.ServiceListPage
+  }))
+);
+
+const ServiceDetailPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.ServiceDetailPage
+  }))
+);
+
 export default function App() {
   const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState<User | null>(null);
@@ -105,6 +120,9 @@ export default function App() {
 
   const [blogs, setBlogs] =
     useState<BlogPost[]>(DEFAULT_BLOGS);
+
+  const [services, setServices] =
+    useState<ServicePillar[]>(DEFAULT_SERVICES);
 
   useEffect(() => {
     let active = true;
@@ -141,6 +159,12 @@ export default function App() {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (isAdminVerified) {
+      seedServicesIfEmpty();
+    }
+  }, [isAdminVerified]);
 
   useEffect(() => {
     seedDatabaseIfEmpty().then((seeded) => {
@@ -199,6 +223,29 @@ export default function App() {
       }
     );
 
+    const servicesQuery = isAdminVerified
+      ? collection(db, "services")
+      : query(
+          collection(db, "services"),
+          where("status", "==", "published")
+        );
+
+    const unsubscribeServices = onSnapshot(
+      servicesQuery,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const serviceItems: ServicePillar[] = [];
+          snapshot.forEach((item) => {
+            serviceItems.push(item.data() as ServicePillar);
+          });
+          setServices(serviceItems);
+        }
+      },
+      (error) => {
+        console.log("Using default services:", error);
+      }
+    );
+
     let unsubscribeBlogs: () => void;
 
     if (isAdminVerified) {
@@ -244,6 +291,7 @@ export default function App() {
       unsubscribeSettings();
       unsubscribeTeam();
       unsubscribePortfolio();
+      unsubscribeServices();
       unsubscribeBlogs();
     };
   }, [isAdminVerified]);
@@ -266,6 +314,8 @@ export default function App() {
                     setPortfolio={setPortfolio}
                     blogs={blogs}
                     setBlogs={setBlogs}
+                    services={services}
+                    setServices={setServices}
                     onClose={() => {
                       navigate("/");
                     }}
@@ -289,10 +339,37 @@ export default function App() {
                     image={settings.logoUrl}
                   />
                   <Hero settings={settings} />
-                  <Services />
+                  <Services services={services} />
                   <Portfolio projects={portfolio} />
                   <Team members={team} />
                   <Blog blogs={blogs} />
+                  <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/services"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <ServiceListPage services={services} settings={settings} />
+                  <Footer settings={settings} />
+                  <FloatingViber settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/services/:slug"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <ServiceDetailPage
+                    services={services}
+                    blogs={blogs}
+                    projects={portfolio}
+                    settings={settings}
+                  />
                   <Footer settings={settings} />
                   <FloatingViber settings={settings} />
                 </>
@@ -336,7 +413,11 @@ export default function App() {
               element={
                 <>
                   <Header settings={settings} />
-                  <CaseStudyDetailPage projects={portfolio} settings={settings} />
+                  <CaseStudyDetailPage
+                    projects={portfolio}
+                    services={services}
+                    settings={settings}
+                  />
                   <Footer settings={settings} />
                   <FloatingViber settings={settings} />
                 </>
@@ -358,7 +439,7 @@ export default function App() {
               element={
                 <>
                   <Header settings={settings} />
-                  <BlogDetailPage blogs={blogs} settings={settings} />
+                  <BlogDetailPage blogs={blogs} services={services} settings={settings} />
                   <Footer settings={settings} />
                   <FloatingViber settings={settings} />
                 </>
