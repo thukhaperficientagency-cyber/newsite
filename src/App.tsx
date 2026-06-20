@@ -23,7 +23,6 @@ import {
 import {
   seedDatabaseIfEmpty,
   DEFAULT_SETTINGS,
-  DEFAULT_TEAM,
   DEFAULT_PORTFOLIO,
   DEFAULT_BLOGS,
   DEFAULT_SERVICES,
@@ -114,7 +113,7 @@ export default function App() {
     useState<Settings>(DEFAULT_SETTINGS);
 
   const [team, setTeam] =
-    useState<TeamMember[]>(DEFAULT_TEAM);
+    useState<TeamMember[]>([]);
 
   const [portfolio, setPortfolio] =
     useState<PortfolioProject[]>(DEFAULT_PORTFOLIO);
