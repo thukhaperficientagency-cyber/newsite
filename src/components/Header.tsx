@@ -205,10 +205,17 @@ export default function Header({
           )}
 
           <button
+  type="button"
   onClick={() => setIsOpen(!isOpen)}
+  aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+  aria-expanded={isOpen}
   className="text-gray-400 hover:text-white p-1"
 >
-  {isOpen ? <X size={24} /> : <Menu size={24} />}
+  {isOpen ? (
+    <X size={24} aria-hidden="true" />
+  ) : (
+    <Menu size={24} aria-hidden="true" />
+  )}
 </button>
         </div>
       </div>
