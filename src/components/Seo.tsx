@@ -47,6 +47,14 @@ export default function Seo({
     setMeta('meta[property="og:description"]', { property: "og:description", content: description });
     setMeta('meta[property="og:type"]', { property: "og:type", content: type });
     setMeta('meta[property="og:url"]', { property: "og:url", content: canonicalUrl });
+    setMeta('meta[name="twitter:title"]', {
+      name: "twitter:title",
+      content: title
+    });
+    setMeta('meta[name="twitter:description"]', {
+      name: "twitter:description",
+      content: description
+    });
     setMeta('meta[name="twitter:card"]', {
       name: "twitter:card",
       content: image ? "summary_large_image" : "summary"
@@ -54,7 +62,27 @@ export default function Seo({
 
     if (image) {
       setMeta('meta[property="og:image"]', { property: "og:image", content: image });
+      setMeta('meta[property="og:image:secure_url"]', {
+        property: "og:image:secure_url",
+        content: image
+      });
+      setMeta('meta[property="og:image:width"]', {
+        property: "og:image:width",
+        content: "1200"
+      });
+      setMeta('meta[property="og:image:height"]', {
+        property: "og:image:height",
+        content: "630"
+      });
+      setMeta('meta[property="og:image:alt"]', {
+        property: "og:image:alt",
+        content: title
+      });
       setMeta('meta[name="twitter:image"]', { name: "twitter:image", content: image });
+      setMeta('meta[name="twitter:image:alt"]', {
+        name: "twitter:image:alt",
+        content: title
+      });
     }
 
     let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
