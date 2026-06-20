@@ -345,6 +345,24 @@ export function TeamDetailPage({
   settings: Settings;
 }) {
   const { id } = useParams();
+
+  if (members.length === 0) {
+    return (
+      <div
+        className="min-h-[70vh] flex items-center justify-center bg-[#0d0f14]"
+        role="status"
+        aria-label="Loading team profile"
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-2 border-indigo-500/30 border-t-indigo-500 animate-spin" />
+          <p className="text-xs font-mono uppercase tracking-widest text-gray-500">
+            Loading profile
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const member = members.find(
     (item) => teamMemberSlug(item) === id || item.id === id
   );
