@@ -1,118 +1,256 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Global default-deny safety gate
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
 
     function isAdmin() {
-      return isSignedIn() 
-        && request.auth.token.email == "thukhaaung542981@gmail.com";
+      return isSignedIn()
+        && exists(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        ).data.active == true
+        && get(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        ).data.role == "admin";
     }
 
     function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return id is string
+        && id.size() <= 128
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    // Settings Validation Block
     function isValidSettings(data) {
-      return data.id is string && data.id.size() <= 64
-        && data.brandName is string && data.brandName.size() <= 128
-        && data.logoText is string && data.logoText.size() <= 64
-        && (data.logoUrl == null || (data.logoUrl is string && data.logoUrl.size() <= 1024))
-        && (data.tagline == null || (data.tagline is string && data.tagline.size() <= 256))
-        && (data.email == null || (data.email is string && data.email.size() <= 128))
-        && (data.phone == null || (data.phone is string && data.phone.size() <= 64))
-        && (data.address == null || (data.address is string && data.address.size() <= 512))
-        && (data.facebookUrl == null || (data.facebookUrl is string && data.facebookUrl.size() <= 512))
-        && (data.linkedinUrl == null || (data.linkedinUrl is string && data.linkedinUrl.size() <= 512))
-        && (data.githubUrl == null || (data.githubUrl is string && data.githubUrl.size() <= 512))
-        && (data.heroTitle == null || (data.heroTitle is string && data.heroTitle.size() <= 256))
-        && (data.heroSubtitle == null || (data.heroSubtitle is string && data.heroSubtitle.size() <= 1024))
-        && (data.aboutText == null || (data.aboutText is string && data.aboutText.size() <= 10000))
-        && (data.clutchRating == null || (data.clutchRating is string && data.clutchRating.size() <= 32));
+      return data.id is string
+        && data.id.size() <= 64
+        && data.brandName is string
+        && data.brandName.size() <= 128
+        && data.logoText is string
+        && data.logoText.size() <= 64
+        && (
+          data.logoUrl == null ||
+          (
+            data.logoUrl is string &&
+            data.logoUrl.size() <= 1024
+          )
+        )
+        && (
+          data.tagline == null ||
+          (
+            data.tagline is string &&
+            data.tagline.size() <= 256
+          )
+        )
+        && (
+          data.email == null ||
+          (
+            data.email is string &&
+            data.email.size() <= 128
+          )
+        )
+        && (
+          data.phone == null ||
+          (
+            data.phone is string &&
+            data.phone.size() <= 64
+          )
+        )
+        && (
+          data.address == null ||
+          (
+            data.address is string &&
+            data.address.size() <= 512
+          )
+        )
+        && (
+          data.facebookUrl == null ||
+          data.facebookUrl is string
+        )
+        && (
+          data.linkedinUrl == null ||
+          data.linkedinUrl is string
+        )
+        && (
+          data.githubUrl == null ||
+          data.githubUrl is string
+        )
+        && (
+          data.heroTitle == null ||
+          data.heroTitle is string
+        )
+        && (
+          data.heroSubtitle == null ||
+          data.heroSubtitle is string
+        )
+        && (
+          data.aboutText == null ||
+          data.aboutText is string
+        )
+        && (
+          data.clutchRating == null ||
+          data.clutchRating is string
+        );
     }
 
-    // Team Member Validation Block
     function isValidTeamMember(data) {
-      return data.id is string && data.id.size() <= 64
-        && data.name is string && data.name.size() <= 128
-        && data.role is string && data.role.size() <= 128
-        && data.photoUrl is string && data.photoUrl.size() <= 1024
-        && (data.bio == null || (data.bio is string && data.bio.size() <= 4096))
-        && (data.order == null || data.order is number)
-        && (data.socialLinkedin == null || (data.socialLinkedin is string && data.socialLinkedin.size() <= 512))
-        && (data.socialGithub == null || (data.socialGithub is string && data.socialGithub.size() <= 512));
+      return data.id is string
+        && data.id.size() <= 64
+        && data.name is string
+        && data.name.size() <= 128
+        && data.role is string
+        && data.role.size() <= 128
+        && data.photoUrl is string
+        && data.photoUrl.size() <= 1024
+        && (
+          data.bio == null ||
+          data.bio is string
+        )
+        && (
+          data.order == null ||
+          data.order is number
+        )
+        && (
+          data.socialLinkedin == null ||
+          data.socialLinkedin is string
+        )
+        && (
+          data.socialGithub == null ||
+          data.socialGithub is string
+        );
     }
 
-    // Portfolio Project Validation Block
     function isValidPortfolioProject(data) {
-      return data.id is string && data.id.size() <= 64
-        && data.title is string && data.title.size() <= 256
-        && data.category is string && data.category.size() <= 128
-        && data.description is string && data.description.size() <= 8192
-        && data.imageUrl is string && data.imageUrl.size() <= 1024
-        && (data.clientName == null || (data.clientName is string && data.clientName.size() <= 128))
-        && (data.tags == null || (data.tags is list && data.tags.size() <= 20))
-        && (data.date == null || (data.date is string && data.date.size() <= 64))
-        && (data.projectUrl == null || (data.projectUrl is string && data.projectUrl.size() <= 1024));
+      return data.id is string
+        && data.id.size() <= 64
+        && data.title is string
+        && data.title.size() <= 256
+        && data.category is string
+        && data.description is string
+        && data.imageUrl is string
+        && (
+          data.clientName == null ||
+          data.clientName is string
+        )
+        && (
+          data.tags == null ||
+          (
+            data.tags is list &&
+            data.tags.size() <= 20
+          )
+        )
+        && (
+          data.date == null ||
+          data.date is string
+        )
+        && (
+          data.projectUrl == null ||
+          data.projectUrl is string
+        );
     }
 
-    // Blog Post Validation Block
     function isValidBlogPost(data) {
-      return data.id is string && data.id.size() <= 64
-        && data.title is string && data.title.size() <= 256
-        && data.excerpt is string && data.excerpt.size() <= 1024
-        && data.content is string && data.content.size() <= 50000
-        && data.slug is string && data.slug.size() <= 128
-        && data.category is string && data.category.size() <= 128
-        && (data.imageUrl == null || (data.imageUrl is string && data.imageUrl.size() <= 1024))
-        && (data.authorName == null || (data.authorName is string && data.authorName.size() <= 128))
-        && (data.authorAvatar == null || (data.authorAvatar is string && data.authorAvatar.size() <= 1024))
-        && data.publishedAt is string && data.publishedAt.size() <= 64
-        && (data.views == null || data.views is number)
-        && data.status is string && (data.status == "published" || data.status == "draft");
+      return data.id is string
+        && data.id.size() <= 64
+        && data.title is string
+        && data.excerpt is string
+        && data.content is string
+        && data.slug is string
+        && data.category is string
+        && (
+          data.imageUrl == null ||
+          data.imageUrl is string
+        )
+        && (
+          data.authorName == null ||
+          data.authorName is string
+        )
+        && (
+          data.authorAvatar == null ||
+          data.authorAvatar is string
+        )
+        && data.publishedAt is string
+        && (
+          data.views == null ||
+          data.views is number
+        )
+        && data.status is string
+        && (
+          data.status == "published" ||
+          data.status == "draft"
+        );
     }
 
-    // 1. Settings Collection
+    match /admins/{userId} {
+      allow get: if isSignedIn()
+        && request.auth.uid == userId;
+
+      allow list, create, update, delete: if false;
+    }
+
     match /settings/{settingsId} {
       allow read: if true;
-      allow create: if isAdmin() && isValidId(settingsId) && isValidSettings(request.resource.data);
-      allow update: if isAdmin() && isValidSettings(request.resource.data);
+
+      allow create: if isAdmin()
+        && isValidId(settingsId)
+        && isValidSettings(request.resource.data);
+
+      allow update: if isAdmin()
+        && isValidSettings(request.resource.data);
+
       allow delete: if isAdmin();
     }
 
-    // 2. Team Collection
     match /team/{memberId} {
       allow read: if true;
-      allow create: if isAdmin() && isValidId(memberId) && isValidTeamMember(request.resource.data);
-      allow update: if isAdmin() && isValidTeamMember(request.resource.data);
+
+      allow create: if isAdmin()
+        && isValidId(memberId)
+        && isValidTeamMember(request.resource.data);
+
+      allow update: if isAdmin()
+        && isValidTeamMember(request.resource.data);
+
       allow delete: if isAdmin();
     }
 
-    // 3. Portfolio Collection
     match /portfolio/{projectId} {
       allow read: if true;
-      allow create: if isAdmin() && isValidId(projectId) && isValidPortfolioProject(request.resource.data);
-      allow update: if isAdmin() && isValidPortfolioProject(request.resource.data);
+
+      allow create: if isAdmin()
+        && isValidId(projectId)
+        && isValidPortfolioProject(request.resource.data);
+
+      allow update: if isAdmin()
+        && isValidPortfolioProject(request.resource.data);
+
       allow delete: if isAdmin();
     }
 
-    // 4. Blog Collection
     match /blog/{postId} {
-      // Public can read only published, admin can read any
-      allow get: if resource.data.status == "published" || isAdmin();
-      allow list: if resource.data.status == "published" || isAdmin();
-      allow create: if isAdmin() && isValidId(postId) && isValidBlogPost(request.resource.data);
-      allow update: if isAdmin() && isValidBlogPost(request.resource.data);
+      allow get: if resource.data.status == "published"
+        || isAdmin();
+
+      allow list: if resource.data.status == "published"
+        || isAdmin();
+
+      allow create: if isAdmin()
+        && isValidId(postId)
+        && isValidBlogPost(request.resource.data);
+
+      allow update: if isAdmin()
+        && isValidBlogPost(request.resource.data);
+
       allow delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
