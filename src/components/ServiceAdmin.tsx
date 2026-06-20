@@ -172,6 +172,36 @@ export default function ServiceAdmin({
               />
             </label>
           </div>
+          <div className="grid md:grid-cols-[1fr_auto] gap-3">
+            <input
+              className={inputClass}
+              placeholder="Social share image URL (recommended 1200×630)"
+              value={form.socialImageUrl || ""}
+              onChange={(e) => setForm({ ...form, socialImageUrl: e.target.value })}
+            />
+            <label className="px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs cursor-pointer text-center">
+              Upload Share Image
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  setIsUploading(true);
+                  try {
+                    const imageUrl = await uploadImage(file, "social-images");
+                    setForm({ ...form, socialImageUrl: imageUrl });
+                  } catch (error) {
+                    showToast(error instanceof Error ? error.message : "Upload failed.", true);
+                  } finally {
+                    setIsUploading(false);
+                    event.target.value = "";
+                  }
+                }}
+              />
+            </label>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <textarea className={inputClass} rows={5} placeholder="Benefits — one per line" value={benefits} onChange={(e) => setBenefits(e.target.value)} />
             <textarea className={inputClass} rows={5} placeholder="Process steps — one per line" value={process} onChange={(e) => setProcess(e.target.value)} />
