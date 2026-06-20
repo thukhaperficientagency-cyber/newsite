@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Menu, X, ShieldAlert, LogOut, CheckCircle } from "lucide-react";
 import { Settings } from "../types";
 import { User } from "firebase/auth";
-import { loginWithGoogle, logoutUser } from "../lib/firebase";
+import { loginWithEmail, logoutUser } from "../lib/firebase";
 
 interface HeaderProps {
   settings: Settings;
