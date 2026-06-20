@@ -5,6 +5,7 @@ interface SeoProps {
   description: string;
   image?: string;
   type?: "website" | "article" | "profile";
+  keywords?: string[];
   jsonLd?: Record<string, unknown>;
 }
 
@@ -26,6 +27,7 @@ export default function Seo({
   description,
   image,
   type = "website",
+  keywords,
   jsonLd
 }: SeoProps) {
   useEffect(() => {
@@ -33,6 +35,14 @@ export default function Seo({
 
     document.title = title;
     setMeta('meta[name="description"]', { name: "description", content: description });
+    if (keywords?.length) {
+      setMeta('meta[name="keywords"]', {
+        name: "keywords",
+        content: keywords.join(", ")
+      });
+    } else {
+      document.head.querySelector('meta[name="keywords"]')?.remove();
+    }
     setMeta('meta[property="og:title"]', { property: "og:title", content: title });
     setMeta('meta[property="og:description"]', { property: "og:description", content: description });
     setMeta('meta[property="og:type"]', { property: "og:type", content: type });
@@ -69,7 +79,7 @@ export default function Seo({
     return () => {
       document.getElementById(scriptId)?.remove();
     };
-  }, [title, description, image, type, jsonLd]);
+  }, [title, description, image, type, keywords, jsonLd]);
 
   return null;
 }
