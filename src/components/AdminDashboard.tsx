@@ -177,15 +177,20 @@ export default function AdminDashboard({
   
   // Team Form States
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [teamKeywordsInput, setTeamKeywordsInput] = useState("");
   const [memberForm, setMemberForm] = useState<Partial<TeamMember>>({
     id: "",
+    slug: "",
     name: "",
     role: "",
     photoUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=400",
     bio: "",
     order: 5,
     socialLinkedin: "",
-    socialGithub: ""
+    socialGithub: "",
+    seoTitle: "",
+    seoDescription: "",
+    keywords: []
   });
 
   // Portfolio Form States
@@ -256,20 +261,26 @@ export default function AdminDashboard({
   const handleEditMember = (member: TeamMember) => {
     setEditingMemberId(member.id);
     setMemberForm(member);
+    setTeamKeywordsInput(member.keywords?.join(", ") || "");
   };
 
   const handleAddNewMemberBtn = () => {
     setEditingMemberId(null);
     setMemberForm({
       id: "member-" + Date.now(),
+      slug: "",
       name: "",
       role: "",
       photoUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=400",
       bio: "",
       order: team.length + 1,
       socialLinkedin: "",
-      socialGithub: ""
+      socialGithub: "",
+      seoTitle: "",
+      seoDescription: "",
+      keywords: []
     });
+    setTeamKeywordsInput("");
   };
 
   const handleSaveMember = async (e: React.FormEvent) => {
@@ -280,7 +291,23 @@ export default function AdminDashboard({
     }
     const path = `team/${memberForm.id}`;
     try {
-      const saved = { ...memberForm } as TeamMember;
+      const normalizedSlug = (
+        memberForm.slug ||
+        memberForm.name
+      )
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      const saved = {
+        ...memberForm,
+        slug: normalizedSlug,
+        keywords: teamKeywordsInput
+          .split(",")
+          .map((keyword) => keyword.trim())
+          .filter(Boolean)
+      } as TeamMember;
       await setDoc(doc(db, "team", saved.id), saved);
       
       const exists = team.some((m) => m.id === saved.id);
@@ -859,6 +886,24 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">
+                      Profile URL Slug
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="thukha-aung"
+                      value={memberForm.slug || ""}
+                      onChange={(e) =>
+                        setMemberForm({ ...memberForm, slug: e.target.value })
+                      }
+                      className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                    />
+                    <p className="text-[10px] text-gray-600 mt-1">
+                      Leave blank to generate it automatically from the name.
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <ImageUploadField
@@ -881,6 +926,53 @@ export default function AdminDashboard({
                         className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">
+                        SEO Title
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Thukha Aung | Managing Director at Perficient 360"
+                        value={memberForm.seoTitle || ""}
+                        onChange={(e) =>
+                          setMemberForm({ ...memberForm, seoTitle: e.target.value })
+                        }
+                        className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">
+                        SEO Keywords
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Thukha Aung, Perficient Myanmar, digital consultant"
+                        value={teamKeywordsInput}
+                        onChange={(e) => setTeamKeywordsInput(e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-mono text-gray-400 mb-1">
+                      SEO Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Short profile summary for Google search results."
+                      value={memberForm.seoDescription || ""}
+                      onChange={(e) =>
+                        setMemberForm({
+                          ...memberForm,
+                          seoDescription: e.target.value
+                        })
+                      }
+                      className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-lg text-xs"
+                    />
                   </div>
 
                   <div>
