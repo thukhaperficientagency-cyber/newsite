@@ -20,7 +20,7 @@ export default function Footer({ settings }: FooterProps) {
   };
 
   return (
-    <footer id="contact" className="bg-[#080a0e] pt-20 pb-10 border-t border-gray-900 relative">
+    <footer className="bg-[#080a0e] pt-20 pb-10 border-t border-gray-900 relative">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6">
