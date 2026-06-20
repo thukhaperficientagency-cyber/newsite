@@ -17,7 +17,7 @@ export default function Portfolio({ projects }: PortfolioProps) {
       : projects.filter((p) => p.category === activeFilter);
 
   return (
-    <section id="portfolio" className="py-24 bg-[#0d0f14] grain-bg relative">
+    <section id="portfolio" className="deferred-section py-24 bg-[#0d0f14] grain-bg relative">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="text-center md:text-left">
@@ -71,6 +71,10 @@ export default function Portfolio({ projects }: PortfolioProps) {
                       <img
                         src={project.imageUrl}
                         alt={project.title}
+                        width="800"
+                        height="450"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
