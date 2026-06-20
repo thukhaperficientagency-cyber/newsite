@@ -47,7 +47,6 @@ import {
 } from "./pages/ContentPages";
 
 export default function App() {
-  const [loading, setLoading] = useState(true);
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isAdminVerified, setIsAdminVerified] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -202,34 +201,13 @@ export default function App() {
       );
     }
 
-    const loadingTimer = setTimeout(() => {
-      setLoading(false);
-    }, 800);
-
     return () => {
       unsubscribeSettings();
       unsubscribeTeam();
       unsubscribePortfolio();
       unsubscribeBlogs();
-      clearTimeout(loadingTimer);
     };
   }, [isAdminVerified]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#07090d] flex flex-col items-center justify-center text-center p-6">
-        <div className="w-12 h-12 border-t-2 border-indigo-500 rounded-full animate-spin mb-4" />
-
-        <h3 className="text-white text-sm font-semibold uppercase">
-          Loading Agency Environment...
-        </h3>
-
-        <p className="text-gray-500 text-xs mt-2">
-          Connecting with Firebase
-        </p>
-      </div>
-    );
-  }
 
   if (
     showAdmin &&
