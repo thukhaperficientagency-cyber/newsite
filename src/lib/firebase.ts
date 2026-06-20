@@ -1,18 +1,33 @@
-import { initializeApp } from "firebase/app";
+import {
+  getApp,
+  getApps,
+  initializeApp
+} from "firebase/app";
+
 import {
   getAuth,
+  inMemoryPersistence,
+  setPersistence,
   signInWithEmailAndPassword,
   signOut
 } from "firebase/auth";
+
 import {
   doc,
   getDoc,
   getFirestore
 } from "firebase/firestore";
-import { OperationType, FirestoreErrorInfo } from "../types";
+
+import {
+  FirestoreErrorInfo,
+  OperationType
+} from "../types";
+
 import firebaseConfig from "../../firebase-applet-config.json";
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length
+  ? getApp()
+  : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
@@ -21,6 +36,8 @@ export async function loginWithEmail(
   email: string,
   password: string
 ) {
+  await setPersistence(auth, inMemoryPersistence);
+
   const result = await signInWithEmailAndPassword(
     auth,
     email.trim(),
@@ -30,9 +47,13 @@ export async function loginWithEmail(
   return result.user;
 }
 
-export async function checkIsAdmin(uid: string): Promise<boolean> {
+export async function checkIsAdmin(
+  uid: string
+): Promise<boolean> {
   try {
-    const adminSnapshot = await getDoc(doc(db, "admins", uid));
+    const adminSnapshot = await getDoc(
+      doc(db, "admins", uid)
+    );
 
     if (!adminSnapshot.exists()) {
       return false;
@@ -64,23 +85,35 @@ export function handleFirestoreError(
   path: string | null
 ) {
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error:
+      error instanceof Error
+        ? error.message
+        : String(error),
+
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
       emailVerified: auth.currentUser?.emailVerified,
       isAnonymous: auth.currentUser?.isAnonymous,
       tenantId: auth.currentUser?.tenantId,
+
       providerInfo:
-        auth.currentUser?.providerData?.map((provider) => ({
-          providerId: provider.providerId,
-          email: provider.email
-        })) || []
+        auth.currentUser?.providerData?.map(
+          (provider) => ({
+            providerId: provider.providerId,
+            email: provider.email
+          })
+        ) || []
     },
+
     operationType,
     path
   };
 
-  console.error("Firestore Error:", JSON.stringify(errInfo));
+  console.error(
+    "Firestore Error:",
+    JSON.stringify(errInfo)
+  );
+
   throw new Error(JSON.stringify(errInfo));
 }
