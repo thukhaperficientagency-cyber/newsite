@@ -1,57 +1,10 @@
-export interface Settings {
-  id: string;
-  brandName: string;
-  logoUrl?: string;
-  logoText: string;
-  tagline?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  facebookUrl?: string;
-  linkedinUrl?: string;
-  githubUrl?: string;
-  heroTitle?: string;
-  heroSubtitle?: string;
-  aboutText?: string;
-  clutchRating?: string;
-}
-
-export interface TeamMember {
-  id: string;
-  slug?: string;
-  name: string;
-  role: string;
-  photoUrl: string;
-  bio?: string;
-  order?: number;
-  socialLinkedin?: string;
-  socialGithub?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  keywords?: string[];
-}
-
-export interface PortfolioProject {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  imageUrl: string;
-  galleryUrls?: string[];
-  clientName?: string;
-  tags?: string[];
-  date?: string;
-  projectUrl?: string;
-  relatedServiceSlug?: string;
-}
-
-export interface ServicePillar {
   id: string;
   slug: string;
   title: string;
   shortDescription: string;
   description: string;
   heroImageUrl?: string;
+  socialImageUrl?: string;
   benefits?: string[];
   process?: string[];
   faqs?: {
@@ -88,6 +41,7 @@ export interface BlogPost {
   slug: string;
   category: string;
   imageUrl?: string;
+  socialImageUrl?: string;
   authorName?: string;
   authorAvatar?: string;
   publishedAt: string;
