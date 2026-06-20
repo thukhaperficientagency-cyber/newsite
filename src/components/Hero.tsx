@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import { ArrowUpRight, Star, Disc, Cpu, Code, Search } from "lucide-react";
 import { Settings } from "../types";
 
@@ -16,10 +15,7 @@ export default function Hero({ settings }: HeroProps) {
       <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
         {/* Rating/Trust Badge */}
         {settings.clutchRating && (
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+          <div 
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-8"
           >
             <div className="flex text-amber-400">
@@ -30,34 +26,25 @@ export default function Hero({ settings }: HeroProps) {
             <span className="text-xs font-mono font-medium tracking-wider text-indigo-300">
               CLUTCH: {settings.clutchRating}
             </span>
-          </motion.div>
+          </div>
         )}
 
         {/* Dynamic Main Heading */}
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+        <h1 
           className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight font-display text-white max-w-5xl mx-auto leading-[1.08] mb-6"
         >
           {settings.heroTitle || "We Build Fast, SEO-Dominated Digital Ecosystems"}
-        </motion.h1>
+        </h1>
 
         {/* Subtitle */}
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+        <p 
           className="text-gray-400 text-base sm:text-lg md:text-xl font-normal max-w-3xl mx-auto leading-relaxed mb-10"
         >
           {settings.heroSubtitle || "A premium digital engineering agency. We sculpt blazing-fast software, premium brand identities, and high-converting marketing structures."}
-        </motion.p>
+        </p>
 
         {/* CTAs */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+        <div 
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
         >
           <a 
@@ -73,13 +60,10 @@ export default function Hero({ settings }: HeroProps) {
           >
             <span>Book a Consultation</span>
           </a>
-        </motion.div>
+        </div>
 
         {/* Dynamic Floating Badges */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
+        <div 
           className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto border-t border-gray-800/80 pt-10"
         >
           <div className="flex items-center gap-3 justify-center md:justify-start">
@@ -118,7 +102,7 @@ export default function Hero({ settings }: HeroProps) {
               <div className="text-[10px] text-gray-500 font-mono">Fully Managed Data</div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
