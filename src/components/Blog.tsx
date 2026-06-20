@@ -10,7 +10,7 @@ export default function Blog({ blogs }: BlogProps) {
   const publishedBlogs = blogs.filter((blog) => blog.status === "published");
 
   return (
-    <section id="blog" className="py-24 bg-[#0d0f14] relative">
+    <section id="blog" className="deferred-section py-24 bg-[#0d0f14] relative">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <span className="text-xs font-mono font-semibold text-indigo-400 tracking-widest uppercase block mb-3">
@@ -42,6 +42,10 @@ export default function Blog({ blogs }: BlogProps) {
                       <img
                         src={post.imageUrl}
                         alt={post.title}
+                        width="840"
+                        height="360"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                       />
                     </div>
