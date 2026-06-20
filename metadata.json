@@ -1,0 +1,6 @@
+{
+  "name": "Perficient Digital Agency",
+  "description": "A high-performance digital agency website featuring deep SEO configuration and a complete content management dashboard for teams, portfolios, and blogs, powered securely by Firebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

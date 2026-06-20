@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "Settings": {
+      "title": "Settings",
+      "description": "Dynamic website configuration parameters including logo, contacts, and copywriting.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "brandName": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "logoText": { "type": "string" },
+        "tagline": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "facebookUrl": { "type": "string" },
+        "linkedinUrl": { "type": "string" },
+        "githubUrl": { "type": "string" },
+        "heroTitle": { "type": "string" },
+        "heroSubtitle": { "type": "string" },
+        "aboutText": { "type": "string" },
+        "clutchRating": { "type": "string" }
+      },
+      "required": ["id", "brandName", "logoText"]
+    },
+    "TeamMember": {
+      "title": "Team Member",
+      "description": "Profiles of team members shown on the website.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "bio": { "type": "string" },
+        "order": { "type": "number" },
+        "socialLinkedin": { "type": "string" },
+        "socialGithub": { "type": "string" }
+      },
+      "required": ["id", "name", "role", "photoUrl"]
+    },
+    "PortfolioProject": {
+      "title": "Portfolio Project",
+      "description": "Showcased work by the agency.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "clientName": { "type": "string" },
+        "tags": { "type": "array" },
+        "date": { "type": "string" },
+        "projectUrl": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "description", "imageUrl"]
+    },
+    "BlogPost": {
+      "title": "Blog Post",
+      "description": "Articles published on the website for SEO and info sharing.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorAvatar": { "type": "string" },
+        "publishedAt": { "type": "string" },
+        "views": { "type": "number" },
+        "status": { "type": "string", "enum": ["draft", "published"] }
+      },
+      "required": ["id", "title", "excerpt", "content", "slug", "category", "publishedAt", "status"]
+    }
+  },
+  "firestore": {
+    "/settings/{settingsId}": {
+      "schema": "Settings",
+      "description": "Global config documents for general branding settings."
+    },
+    "/team/{memberId}": {
+      "schema": "TeamMember",
+      "description": "List of team member profiles."
+    },
+    "/portfolio/{projectId}": {
+      "schema": "PortfolioProject",
+      "description": "Collection of showcased project items."
+    },
+    "/blog/{postId}": {
+      "schema": "BlogPost",
+      "description": "Collection of blog articles and publications."
+    }
+  }
+}
