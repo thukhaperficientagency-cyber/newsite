@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
+  signInWithEmailAndPassword,
   signOut
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -13,7 +12,6 @@ const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
 
 export function handleFirestoreError(
   error: unknown,
@@ -38,24 +36,24 @@ export function handleFirestoreError(
     path
   };
 
-  console.error("Firestore Error: ", JSON.stringify(errInfo));
+  console.error("Firestore Error:", JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
 
-export async function loginWithGoogle() {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
-  } catch (error) {
-    console.error("Authentication Error: ", error);
-    throw error;
-  }
+export async function loginWithEmail(email: string, password: string) {
+  const result = await signInWithEmailAndPassword(
+    auth,
+    email.trim(),
+    password
+  );
+
+  return result.user;
 }
 
 export async function logoutUser() {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error("Logout Error: ", error);
+    console.error("Logout Error:", error);
   }
 }
