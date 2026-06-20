@@ -12,7 +12,7 @@ export default function Team({ members }: TeamProps) {
   );
 
   return (
-    <section id="team" className="py-24 bg-[#0a0c10] border-t border-gray-950 relative">
+    <section id="team" className="deferred-section py-24 bg-[#0a0c10] border-t border-gray-950 relative">
       <div className="absolute bottom-1/4 left-1/3 w-[250px] h-[250px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6">
@@ -46,6 +46,10 @@ export default function Team({ members }: TeamProps) {
                     <img
                       src={member.photoUrl}
                       alt={member.name}
+                      width="450"
+                      height="450"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300 group-hover:scale-[1.02]"
                     />
                   </div>
