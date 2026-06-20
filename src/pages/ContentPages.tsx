@@ -1,4 +1,5 @@
 import { ArrowLeft, ExternalLink, Github, Linkedin } from "lucide-react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Blog from "../components/Blog";
 import Portfolio from "../components/Portfolio";
@@ -8,6 +9,58 @@ import { BlogPost, PortfolioProject, Settings, TeamMember } from "../types";
 
 const fallbackDescription =
   "Digital product engineering, design, SEO, and growth expertise.";
+
+function ProjectGallery({
+  images,
+  title
+}: {
+  images: string[];
+  title: string;
+}) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  if (!images.length) return null;
+
+  return (
+    <>
+      <section className="mt-14">
+        <h2 className="text-2xl font-bold text-white mb-6">Project Gallery</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {images.map((image, index) => (
+            <button
+              key={`${image}-${index}`}
+              type="button"
+              onClick={() => setSelectedImage(image)}
+              className="aspect-square overflow-hidden rounded-2xl border border-gray-800 bg-gray-950"
+            >
+              <img
+                src={image}
+                alt={`${title} gallery image ${index + 1}`}
+                loading="lazy"
+                className="w-full h-full object-cover hover:scale-105 transition-transform"
+              />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {selectedImage && (
+        <button
+          type="button"
+          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 z-50 bg-black/90 p-5 md:p-12 flex items-center justify-center"
+          aria-label="Close gallery image"
+        >
+          <img
+            src={selectedImage}
+            alt={`${title} enlarged gallery view`}
+            className="max-w-full max-h-full object-contain rounded-xl"
+          />
+        </button>
+      )}
+    </>
+  );
+}
 
 export function TeamListPage({
   members,
@@ -168,6 +221,10 @@ export function CaseStudyDetailPage({
         <p className="text-gray-300 leading-8 whitespace-pre-wrap text-base md:text-lg">
           {project.description}
         </p>
+        <ProjectGallery
+          images={project.galleryUrls || []}
+          title={project.title}
+        />
         {project.projectUrl && (
           <a
             href={project.projectUrl}
@@ -259,8 +316,46 @@ export function BlogDetailPage({
           )}
           <span className="text-sm text-gray-300">{post.authorName || settings.brandName}</span>
         </div>
-        <div className="text-gray-300 leading-8 whitespace-pre-wrap">
-          {post.content}
+        <div className="space-y-7">
+          {post.contentBlocks?.length ? (
+            post.contentBlocks.map((block) => {
+              if (block.type === "heading") {
+                return (
+                  <h2 key={block.id} className="text-2xl md:text-3xl font-bold text-white pt-4">
+                    {block.text}
+                  </h2>
+                );
+              }
+
+              if (block.type === "image") {
+                return (
+                  <figure key={block.id}>
+                    <img
+                      src={block.url}
+                      alt={block.alt || post.title}
+                      loading="lazy"
+                      className="w-full rounded-2xl border border-gray-800"
+                    />
+                    {block.caption && (
+                      <figcaption className="text-center text-xs text-gray-500 mt-3">
+                        {block.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                );
+              }
+
+              return (
+                <p key={block.id} className="text-gray-300 leading-8 whitespace-pre-wrap">
+                  {block.text}
+                </p>
+              );
+            })
+          ) : (
+            <div className="text-gray-300 leading-8 whitespace-pre-wrap">
+              {post.content}
+            </div>
+          )}
         </div>
       </article>
     </>
