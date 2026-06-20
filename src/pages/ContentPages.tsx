@@ -126,7 +126,7 @@ export function ServiceDetailPage({
       <Seo
         title={service.seoTitle || `${service.title} | ${settings.brandName}`}
         description={service.seoDescription || service.shortDescription}
-        image={service.heroImageUrl}
+        image={service.socialImageUrl || service.heroImageUrl}
         keywords={service.keywords}
         jsonLd={{
           "@context": "https://schema.org",
@@ -365,7 +365,7 @@ export function TeamDetailPage({
           member.bio ||
           `${member.name} is ${member.role} at ${settings.brandName}.`
         }
-        image={member.photoUrl}
+        image={member.socialImageUrl || member.photoUrl}
         type="profile"
         keywords={member.keywords}
         jsonLd={{
@@ -468,7 +468,7 @@ export function CaseStudyDetailPage({
       <Seo
         title={`${project.title} Case Study | ${settings.brandName}`}
         description={project.description}
-        image={project.imageUrl}
+        image={project.socialImageUrl || project.imageUrl}
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "CreativeWork",
@@ -593,7 +593,7 @@ export function BlogDetailPage({
       <Seo
         title={post.seoTitle || `${post.title} | ${settings.brandName}`}
         description={post.seoDescription || post.excerpt}
-        image={post.imageUrl}
+        image={post.socialImageUrl || post.imageUrl}
         type="article"
         keywords={post.keywords}
         jsonLd={{
