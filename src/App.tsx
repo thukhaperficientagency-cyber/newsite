@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import {
   collection,
   doc,
@@ -7,7 +7,7 @@ import {
   where
 } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import {
   auth,
   checkIsAdmin,
@@ -34,22 +34,64 @@ import Portfolio from "./components/Portfolio";
 import Team from "./components/Team";
 import Blog from "./components/Blog";
 import Footer from "./components/Footer";
-import AdminDashboard from "./components/AdminDashboard";
 import Seo from "./components/Seo";
-import {
-  BlogDetailPage,
-  BlogListPage,
-  CaseStudyDetailPage,
-  CaseStudyListPage,
-  NotFoundPage,
-  TeamDetailPage,
-  TeamListPage
-} from "./pages/ContentPages";
+
+const AdminDashboard = lazy(
+  () => import("./components/AdminDashboard")
+);
+
+const AdminLoginPage = lazy(
+  () => import("./pages/AdminLoginPage")
+);
+
+const contentPagesImport = () => import("./pages/ContentPages");
+
+const BlogDetailPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.BlogDetailPage
+  }))
+);
+
+const BlogListPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.BlogListPage
+  }))
+);
+
+const CaseStudyDetailPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.CaseStudyDetailPage
+  }))
+);
+
+const CaseStudyListPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.CaseStudyListPage
+  }))
+);
+
+const NotFoundPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.NotFoundPage
+  }))
+);
+
+const TeamDetailPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.TeamDetailPage
+  }))
+);
+
+const TeamListPage = lazy(() =>
+  contentPagesImport().then((module) => ({
+    default: module.TeamListPage
+  }))
+);
 
 export default function App() {
+  const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isAdminVerified, setIsAdminVerified] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
 
   const [settings, setSettings] =
     useState<Settings>(DEFAULT_SETTINGS);
@@ -75,7 +117,6 @@ export default function App() {
 
         if (!user) {
           setIsAdminVerified(false);
-          setShowAdmin(false);
           return;
         }
 
@@ -91,9 +132,6 @@ export default function App() {
 
         setIsAdminVerified(hasAdminAccess);
 
-        if (!hasAdminAccess) {
-          setShowAdmin(false);
-        }
       }
     );
 
@@ -209,87 +247,139 @@ export default function App() {
     };
   }, [isAdminVerified]);
 
-  if (
-    showAdmin &&
-    adminUser &&
-    isAdminVerified
-  ) {
-    return (
-      <AdminDashboard
-        settings={settings}
-        setSettings={setSettings}
-        team={team}
-        setTeam={setTeam}
-        portfolio={portfolio}
-        setPortfolio={setPortfolio}
-        blogs={blogs}
-        setBlogs={setBlogs}
-        onClose={() => setShowAdmin(false)}
-      />
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#0d0f14] text-[#f3f4f6] relative flex flex-col justify-between">
-      <Header
-        settings={settings}
-        adminUser={adminUser}
-        showAdmin={showAdmin}
-        setShowAdmin={setShowAdmin}
-        isAdminVerifiedLocal={isAdminVerified}
-      />
-
       <main className="flex-grow">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Seo
-                  title={`${settings.brandName} | Digital Product Engineering`}
-                  description={
-                    settings.heroSubtitle ||
-                    "Digital product engineering, design, SEO, and growth services."
-                  }
-                  image={settings.logoUrl}
-                />
-                <Hero settings={settings} />
-                <Services />
-                <Portfolio projects={portfolio} />
-                <Team members={team} />
-                <Blog blogs={blogs} />
-              </>
-            }
-          />
-          <Route
-            path="/team"
-            element={<TeamListPage members={team} settings={settings} />}
-          />
-          <Route
-            path="/team/:id"
-            element={<TeamDetailPage members={team} settings={settings} />}
-          />
-          <Route
-            path="/case-studies"
-            element={<CaseStudyListPage projects={portfolio} settings={settings} />}
-          />
-          <Route
-            path="/case-studies/:id"
-            element={<CaseStudyDetailPage projects={portfolio} settings={settings} />}
-          />
-          <Route
-            path="/blog"
-            element={<BlogListPage blogs={blogs} settings={settings} />}
-          />
-          <Route
-            path="/blog/:slug"
-            element={<BlogDetailPage blogs={blogs} settings={settings} />}
-          />
-          <Route path="*" element={<NotFoundPage settings={settings} />} />
-        </Routes>
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route
+              path="/admin"
+              element={
+                adminUser && isAdminVerified ? (
+                  <AdminDashboard
+                    settings={settings}
+                    setSettings={setSettings}
+                    team={team}
+                    setTeam={setTeam}
+                    portfolio={portfolio}
+                    setPortfolio={setPortfolio}
+                    blogs={blogs}
+                    setBlogs={setBlogs}
+                    onClose={() => {
+                      navigate("/");
+                    }}
+                  />
+                ) : (
+                  <AdminLoginPage onVerified={() => undefined} />
+                )
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <Seo
+                    title={`${settings.brandName} | Digital Product Engineering`}
+                    description={
+                      settings.heroSubtitle ||
+                      "Digital product engineering, design, SEO, and growth services."
+                    }
+                    image={settings.logoUrl}
+                  />
+                  <Hero settings={settings} />
+                  <Services />
+                  <Portfolio projects={portfolio} />
+                  <Team members={team} />
+                  <Blog blogs={blogs} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/team"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <TeamListPage members={team} settings={settings} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/team/:id"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <TeamDetailPage members={team} settings={settings} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/case-studies"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <CaseStudyListPage projects={portfolio} settings={settings} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/case-studies/:id"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <CaseStudyDetailPage projects={portfolio} settings={settings} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/blog"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <BlogListPage blogs={blogs} settings={settings} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="/blog/:slug"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <BlogDetailPage blogs={blogs} settings={settings} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <>
+                  <Header settings={settings} />
+                  <NotFoundPage settings={settings} />
+                  <Footer settings={settings} />
+                </>
+              }
+            />
+          </Routes>
+        </Suspense>
       </main>
+    </div>
+  );
+}
 
-      <Footer settings={settings} />
+function PageFallback() {
+  return (
+    <div
+      aria-label="Loading page"
+      className="min-h-[60vh] flex items-center justify-center bg-[#0d0f14]"
+    >
+      <div className="w-8 h-8 border-2 border-gray-800 border-t-indigo-500 rounded-full animate-spin" />
     </div>
   );
 }
