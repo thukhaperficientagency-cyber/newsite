@@ -32,6 +32,10 @@ export default function Footer({ settings }: FooterProps) {
                 <img 
                   src={settings.logoUrl} 
                   alt={settings.brandName} 
+                  width="160"
+                  height="32"
+                  loading="lazy"
+                  decoding="async"
                   className="h-8 w-auto object-contain"
                   referrerPolicy="no-referrer"
                 />
@@ -53,33 +57,33 @@ export default function Footer({ settings }: FooterProps) {
                 <a 
                   href={settings.facebookUrl} 
                   target="_blank" 
-                  rel="noreferrer" 
+                  rel="noreferrer"
                   aria-label="Visit Perficient Agency on Facebook"
                   className="w-8 h-8 rounded-full bg-gray-900 hover:bg-indigo-600 hover:text-white text-gray-400 border border-gray-800 transition-all flex items-center justify-center cursor-pointer"
                 >
-                  <Facebook size={14} />
+                  <Facebook size={14} aria-hidden="true" />
                 </a>
               )}
               {settings.linkedinUrl && (
                 <a 
                   href={settings.linkedinUrl} 
                   target="_blank" 
-                  rel="noreferrer" 
-                  aria-label="Visit Perficient Agency on Linkedin"
+                  rel="noreferrer"
+                  aria-label="Visit Perficient Agency on LinkedIn"
                   className="w-8 h-8 rounded-full bg-gray-900 hover:bg-indigo-600 hover:text-white text-gray-400 border border-gray-800 transition-all flex items-center justify-center cursor-pointer"
                 >
-                  <Linkedin size={14} />
+                  <Linkedin size={14} aria-hidden="true" />
                 </a>
               )}
               {settings.githubUrl && (
                 <a 
                   href={settings.githubUrl} 
                   target="_blank" 
-                  rel="noreferrer" 
-                  aria-label="Visit Perficient Agency on Github"
+                  rel="noreferrer"
+                  aria-label="Visit Perficient Agency on GitHub"
                   className="w-8 h-8 rounded-full bg-gray-900 hover:bg-indigo-600 hover:text-white text-gray-400 border border-gray-800 transition-all flex items-center justify-center cursor-pointer"
                 >
-                  <Github size={14} />
+                  <Github size={14} aria-hidden="true" />
                 </a>
               )}
             </div>
@@ -130,7 +134,9 @@ export default function Footer({ settings }: FooterProps) {
           </div>
 
           <button 
+            type="button"
             onClick={handleScrollTop}
+            aria-label="Scroll back to top"
             className="p-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-indigo-500/30 text-gray-400 hover:text-white transition-all cursor-pointer"
             title="Scroll back to top"
           >
