@@ -54,6 +54,7 @@ export default function Footer({ settings }: FooterProps) {
                   href={settings.facebookUrl} 
                   target="_blank" 
                   rel="noreferrer" 
+                  aria-label="Visit Perficient Agency on Facebook"
                   className="w-8 h-8 rounded-full bg-gray-900 hover:bg-indigo-600 hover:text-white text-gray-400 border border-gray-800 transition-all flex items-center justify-center cursor-pointer"
                 >
                   <Facebook size={14} />
@@ -64,6 +65,7 @@ export default function Footer({ settings }: FooterProps) {
                   href={settings.linkedinUrl} 
                   target="_blank" 
                   rel="noreferrer" 
+                  aria-label="Visit Perficient Agency on Linkedin"
                   className="w-8 h-8 rounded-full bg-gray-900 hover:bg-indigo-600 hover:text-white text-gray-400 border border-gray-800 transition-all flex items-center justify-center cursor-pointer"
                 >
                   <Linkedin size={14} />
@@ -74,6 +76,7 @@ export default function Footer({ settings }: FooterProps) {
                   href={settings.githubUrl} 
                   target="_blank" 
                   rel="noreferrer" 
+                  aria-label="Visit Perficient Agency on Github"
                   className="w-8 h-8 rounded-full bg-gray-900 hover:bg-indigo-600 hover:text-white text-gray-400 border border-gray-800 transition-all flex items-center justify-center cursor-pointer"
                 >
                   <Github size={14} />
