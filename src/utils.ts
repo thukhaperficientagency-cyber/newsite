@@ -1,4 +1,12 @@
-import { collection, doc, getDocs, setDoc, query, limit } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  limit,
+  query,
+  setDoc,
+  writeBatch
+} from "firebase/firestore";
 import { db, handleFirestoreError } from "./lib/firebase";
 import { OperationType, Settings, TeamMember, PortfolioProject, BlogPost, ServicePillar } from "./types";
 
@@ -237,10 +245,13 @@ export async function seedServicesIfEmpty(): Promise<boolean> {
 
     if (!snapshot.empty) return false;
 
+    const batch = writeBatch(db);
+
     for (const service of DEFAULT_SERVICES) {
-      await setDoc(doc(db, "services", service.id), service);
+      batch.set(doc(db, "services", service.id), service);
     }
 
+    await batch.commit();
     return true;
   } catch (error) {
     console.error("Service pillar seeding skipped:", error);
