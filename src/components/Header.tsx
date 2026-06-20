@@ -94,11 +94,11 @@ export default function Header({
   };
 
   const navItems = [
-    { name: "Services", href: "#services" },
-    { name: "Portfolio", href: "#portfolio" },
-    { name: "Team", href: "#team" },
-    { name: "Blog", href: "#blog" },
-    { name: "Contact", href: "#contact" }
+    { name: "Services", href: "/#services" },
+    { name: "Portfolio", href: "/case-studies" },
+    { name: "Team", href: "/team" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact", href: "/#contact" }
   ];
 
   return (
@@ -107,7 +107,7 @@ export default function Header({
       className="sticky top-0 z-40 bg-[#0d0f14]/85 backdrop-blur-md border-b border-gray-800/60"
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3">
           {settings.logoUrl ? (
             <img
               id="header_logo_img"
