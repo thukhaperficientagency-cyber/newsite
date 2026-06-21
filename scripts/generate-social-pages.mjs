@@ -6,6 +6,36 @@ const projectId = "newsite-ccdea";
 const apiRoot =
   `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents`;
 
+const fallbackServices = [
+  ["Digital Marketing Services in Myanmar", "digital-marketing-myanmar"],
+  ["Website Development Myanmar", "website-development-myanmar"],
+  ["Branding Agency Myanmar", "branding-agency-myanmar"],
+  ["Social Media Management Services in Myanmar", "social-media-management-myanmar"],
+  ["PPC Advertising Services in Myanmar", "ppc-advertising-myanmar"],
+  ["Event Management Services in Myanmar", "event-management-myanmar"],
+  ["POSM Production Myanmar", "posm-production-myanmar"]
+].map(([title, slug]) => ({ title, slug }));
+
+const fallbackBlogs = [
+  {
+    title: "Why Every Myanmar Business Needs Digital Marketing in 2026",
+    slug: "why-every-myanmar-business-needs-digital-marketing"
+  },
+  {
+    title: "Facebook Marketing vs Google Ads: Which is Better for Myanmar Businesses?",
+    slug: "facebook-marketing-vs-google-ads-myanmar"
+  }
+];
+
+const fallbackContentPaths = [
+  "/team/thukha-aung",
+  "/case-studies/project-1",
+  "/case-studies/project-1781957296845",
+  "/case-studies/project-2",
+  ...fallbackServices.map((service) => `/services/${service.slug}`),
+  ...fallbackBlogs.map((post) => `/blog/${post.slug}`)
+];
+
 function valueOf(value) {
   if (!value) return undefined;
   if ("stringValue" in value) return value.stringValue;
@@ -70,6 +100,10 @@ function escapeHtml(value = "") {
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
+}
+
+function escapeXml(value = "") {
+  return escapeHtml(value).replaceAll("'", "&apos;");
 }
 
 function replaceHead(baseHtml, page) {
@@ -179,4 +213,97 @@ for (const result of results) {
 }
 
 await Promise.all(pages.map((page) => writePage(baseHtml, page)));
-console.log(`Generated ${pages.length} social preview pages.`);
+
+const sitemapPages = [
+  { path: "/", priority: "1.0", changefreq: "weekly" },
+  { path: "/services", priority: "0.9", changefreq: "weekly" },
+  { path: "/case-studies", priority: "0.9", changefreq: "weekly" },
+  { path: "/blog", priority: "0.9", changefreq: "weekly" },
+  { path: "/team", priority: "0.7", changefreq: "monthly" },
+  ...fallbackContentPaths.map((path) => ({
+    path,
+    priority: path.startsWith("/team/") ? "0.6" : "0.8",
+    changefreq: "monthly"
+  })),
+  ...pages.map((page) => ({
+    path: page.path,
+    priority: page.path.startsWith("/team/") ? "0.6" : "0.8",
+    changefreq: "monthly"
+  }))
+];
+
+const uniqueSitemapPages = [
+  ...new Map(sitemapPages.map((page) => [page.path, page])).values()
+];
+
+const sitemapXml = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  ...uniqueSitemapPages.map((page) =>
+    [
+      "  <url>",
+      `    <loc>${escapeXml(`${siteUrl}${page.path}`)}</loc>`,
+      `    <changefreq>${page.changefreq}</changefreq>`,
+      `    <priority>${page.priority}</priority>`,
+      "  </url>"
+    ].join("\n")
+  ),
+  "</urlset>",
+  ""
+].join("\n");
+
+const services =
+  results[2].status === "fulfilled" && results[2].value.length
+    ? results[2].value
+    : fallbackServices;
+const blogs =
+  results[3].status === "fulfilled" && results[3].value.length
+    ? results[3].value
+    : fallbackBlogs;
+
+const llmsText = [
+  "# Perficient 360 Marketing Agency",
+  "",
+  "Perficient 360 Marketing Agency is a Myanmar digital agency providing digital marketing, website development, branding, SEO, social media management, PPC advertising, event management, POSM production, and business growth services.",
+  "",
+  "## Main Pages",
+  "",
+  `- [Home](${siteUrl}/)`,
+  `- [Services](${siteUrl}/services)`,
+  `- [Case Studies](${siteUrl}/case-studies)`,
+  `- [Team](${siteUrl}/team)`,
+  `- [Blog](${siteUrl}/blog)`,
+  `- [Contact](${siteUrl}/#contact)`,
+  "",
+  "## Services",
+  "",
+  ...services.map(
+    (service) => `- [${service.title}](${siteUrl}/services/${service.slug})`
+  ),
+  "",
+  "## Latest Insights",
+  "",
+  ...blogs.map(
+    (post) => `- [${post.title}](${siteUrl}/blog/${post.slug})`
+  ),
+  "",
+  "## Business Information",
+  "",
+  "- Email: hello@perficientagency.online",
+  "- Phone: +95 967 360 0315",
+  "- Service area: Myanmar",
+  "",
+  "## Crawling",
+  "",
+  "Public pages, published service pages, case studies, team profiles, and published blog articles may be crawled, summarized, and indexed.",
+  ""
+].join("\n");
+
+await Promise.all([
+  writeFile("dist/sitemap.xml", sitemapXml, "utf8"),
+  writeFile("dist/llms.txt", llmsText, "utf8")
+]);
+
+console.log(
+  `Generated ${pages.length} social preview pages, sitemap.xml, and llms.txt.`
+);
