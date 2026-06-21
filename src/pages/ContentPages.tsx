@@ -64,6 +64,23 @@ function Breadcrumbs({
   );
 }
 
+function ContentLoading({ label }: { label: string }) {
+  return (
+    <div
+      className="min-h-[60vh] flex items-center justify-center bg-[#0d0f14]"
+      role="status"
+      aria-label={label}
+    >
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-indigo-500/30 border-t-indigo-500 animate-spin" />
+        <p className="text-xs font-mono uppercase tracking-widest text-gray-500">
+          {label}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function ServiceListPage({
   services,
   settings
@@ -71,6 +88,10 @@ export function ServiceListPage({
   services: ServicePillar[];
   settings: Settings;
 }) {
+  if (services.length === 0) {
+    return <ContentLoading label="Loading services" />;
+  }
+
   return (
     <>
       <Seo
@@ -106,6 +127,11 @@ export function ServiceDetailPage({
   settings: Settings;
 }) {
   const { slug } = useParams();
+
+  if (services.length === 0) {
+    return <ContentLoading label="Loading service" />;
+  }
+
   const service = services.find(
     (item) => item.slug === slug && item.status === "published"
   );
@@ -451,6 +477,10 @@ export function CaseStudyListPage({
   projects: PortfolioProject[];
   settings: Settings;
 }) {
+  if (projects.length === 0) {
+    return <ContentLoading label="Loading case studies" />;
+  }
+
   return (
     <>
       <Seo
@@ -472,6 +502,11 @@ export function CaseStudyDetailPage({
   settings: Settings;
 }) {
   const { id } = useParams();
+
+  if (projects.length === 0) {
+    return <ContentLoading label="Loading case study" />;
+  }
+
   const project = projects.find((item) => item.id === id);
 
   if (!project) return <NotFoundPage settings={settings} />;
