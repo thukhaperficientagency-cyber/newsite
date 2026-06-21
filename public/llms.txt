@@ -1,16 +1,23 @@
-# Perficient Agency
-
-Perficient Agency is a digital agency serving businesses in Myanmar with web development, UI/UX design, SEO, branding, and digital growth services.
-
+# Perficient 360 Marketing Agency
+Perficient 360 Marketing Agency is a Myanmar digital agency providing digital marketing, website development, branding, SEO, social media management, PPC advertising, event management, POSM production, and business growth services.
 ## Main Pages
-
 - [Home](https://www.perficientagency.online/)
-- [Services](https://www.perficientagency.online/#services)
+- [Services](https://www.perficientagency.online/services)
 - [Case Studies](https://www.perficientagency.online/case-studies)
 - [Team](https://www.perficientagency.online/team)
 - [Blog](https://www.perficientagency.online/blog)
 - [Contact](https://www.perficientagency.online/#contact)
-
+## Services
+- [Digital Marketing Services in Myanmar](https://www.perficientagency.online/services/digital-marketing-myanmar)
+- [Website Development Myanmar](https://www.perficientagency.online/services/website-development-myanmar)
+- [Branding Agency Myanmar](https://www.perficientagency.online/services/branding-agency-myanmar)
+- [Social Media Management Services in Myanmar](https://www.perficientagency.online/services/social-media-management-myanmar)
+- [PPC Advertising Services in Myanmar](https://www.perficientagency.online/services/ppc-advertising-myanmar)
+- [Event Management Services in Myanmar](https://www.perficientagency.online/services/event-management-myanmar)
+- [POSM Production Myanmar](https://www.perficientagency.online/services/posm-production-myanmar)
+## Business Information
+- Email: hello@perficientagency.online
+- Phone: +95 967 360 0315
+- Service area: Myanmar
 ## Crawling
-
-Public website pages, published case studies, and published blog posts may be crawled and indexed.
+Public pages, published service pages, case studies, team profiles, and published blog articles may be crawled, summarized, and indexed.
