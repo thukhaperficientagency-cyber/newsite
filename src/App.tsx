@@ -125,6 +125,22 @@ export default function App() {
     useState<ServicePillar[]>(DEFAULT_SERVICES);
 
   useEffect(() => {
+    if (!settings.faviconUrl) return;
+
+    let favicon = document.head.querySelector<HTMLLinkElement>(
+      'link[rel="icon"]'
+    );
+
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.rel = "icon";
+      document.head.appendChild(favicon);
+    }
+
+    favicon.href = settings.faviconUrl;
+  }, [settings.faviconUrl]);
+
+  useEffect(() => {
     let active = true;
 
     const unsubscribe = onAuthStateChanged(
