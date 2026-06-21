@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Menu, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { Settings } from "../types";
 
 interface HeaderProps {
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export default function Header({ settings }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   const navItems = [
     { name: "Services", href: "/services" },
@@ -17,6 +19,17 @@ export default function Header({ settings }: HeaderProps) {
     { name: "Blog", href: "/blog" },
     { name: "Contact", href: "/#contact" }
   ];
+
+  const isActive = (href: string) => {
+    if (href === "/#contact") {
+      return location.pathname === "/" && location.hash === "#contact";
+    }
+
+    return (
+      location.pathname === href ||
+      location.pathname.startsWith(`${href}/`)
+    );
+  };
 
   return (
     <header
@@ -45,15 +58,29 @@ export default function Header({ settings }: HeaderProps) {
         </a>
 
         <nav className="hidden md:flex items-center gap-10" aria-label="Main navigation">
-          {navItems.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium tracking-wide"
-            >
-              {item.name}
-            </a>
-          ))}
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`relative py-2 text-sm font-medium tracking-wide transition-colors ${
+                  active
+                    ? "text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                {item.name}
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-0 -bottom-1 h-0.5 bg-indigo-500 transition-all duration-300 ${
+                    active ? "w-full" : "w-0"
+                  }`}
+                />
+              </a>
+            );
+          })}
         </nav>
 
         <button
@@ -81,16 +108,24 @@ export default function Header({ settings }: HeaderProps) {
             aria-label="Mobile navigation"
           >
             <div className="px-6 py-6 flex flex-col gap-5">
-              {navItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-gray-300 hover:text-white font-medium"
-                >
-                  {item.name}
-                </a>
-              ))}
+              {navItems.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className={`border-l-2 px-4 py-2 font-medium transition-colors ${
+                      active
+                        ? "border-indigo-500 bg-indigo-500/10 text-white"
+                        : "border-transparent text-gray-300 hover:text-white"
+                    }`}
+                  >
+                    {item.name}
+                  </a>
+                );
+              })}
             </div>
           </motion.nav>
         )}
