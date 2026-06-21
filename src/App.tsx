@@ -23,9 +23,7 @@ import {
 import {
   seedDatabaseIfEmpty,
   DEFAULT_SETTINGS,
-  DEFAULT_PORTFOLIO,
   DEFAULT_BLOGS,
-  DEFAULT_SERVICES,
   seedServicesIfEmpty
 } from "./utils";
 
@@ -116,13 +114,13 @@ export default function App() {
     useState<TeamMember[]>([]);
 
   const [portfolio, setPortfolio] =
-    useState<PortfolioProject[]>(DEFAULT_PORTFOLIO);
+    useState<PortfolioProject[]>([]);
 
   const [blogs, setBlogs] =
     useState<BlogPost[]>(DEFAULT_BLOGS);
 
   const [services, setServices] =
-    useState<ServicePillar[]>(DEFAULT_SERVICES);
+    useState<ServicePillar[]>([]);
 
   useEffect(() => {
     if (!settings.faviconUrl) return;
