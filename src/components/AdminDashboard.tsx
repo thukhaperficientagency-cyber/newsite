@@ -718,6 +718,20 @@ export default function AdminDashboard({
                     />
                   </div>
                   <div>
+                    <ImageUploadField
+                      label="Browser Favicon (Square 512×512 recommended)"
+                      folder="branding"
+                      value={settingsForm.faviconUrl || ""}
+                      onChange={(faviconUrl) =>
+                        setSettingsForm({ ...settingsForm, faviconUrl })
+                      }
+                      onError={(message) => showToast(message, true)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
                     <label className="block text-xs font-mono text-gray-400 mb-2 uppercase">Clutch Ratings / Proof</label>
                     <input 
                       type="text" 
