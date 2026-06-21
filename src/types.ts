@@ -2,6 +2,7 @@ export interface Settings {
   id: string;
   brandName: string;
   logoUrl?: string;
+  faviconUrl?: string;
   logoText: string;
   tagline?: string;
   email?: string;
