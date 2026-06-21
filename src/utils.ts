@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS: Settings = {
   brandName: "Perficient Myanmar",
   logoText: "perficient.",
   logoUrl: "", // Empty means text logo falls back beautifully
+  faviconUrl: "",
   tagline: "Engineering Digital Dominance",
   email: "hello@perficient.agency",
   phone: "+95 9 789 456 123",
