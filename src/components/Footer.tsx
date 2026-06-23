@@ -93,10 +93,10 @@ export default function Footer({ settings }: FooterProps) {
           <div className="md:col-span-3 flex flex-col gap-4">
             <h4 className="text-xs uppercase font-mono font-bold tracking-wider text-gray-300">Quick Anchors</h4>
             <ul className="flex flex-col gap-2.5 text-xs md:text-sm text-gray-400">
-              <li><a href="#services" className="hover:text-white transition-colors">Services Directory</a></li>
-              <li><a href="#portfolio" className="hover:text-white transition-colors">Digital Case Studies</a></li>
-              <li><a href="#team" className="hover:text-white transition-colors">Squad Members</a></li>
-              <li><a href="#blog" className="hover:text-white transition-colors">Search Blog Insights</a></li>
+              <li><a href="/services" className="hover:text-white transition-colors">Services Directory</a></li>
+              <li><a href="/case-studies" className="hover:text-white transition-colors">Digital Case Studies</a></li>
+              <li><a href="/team" className="hover:text-white transition-colors">Squad Members</a></li>
+              <li><a href="/blog" className="hover:text-white transition-colors">Search Blog Insights</a></li>
             </ul>
           </div>
 
